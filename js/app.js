@@ -711,6 +711,44 @@ function renderBarChart(containerId, countMap, order) {
   `).join('');
 }
 
+// ── 피드백 ──
+function openFeedbackModal() {
+  document.getElementById('feedback-text').value = '';
+  openModal('modal-feedback');
+}
+
+function sendEmailFeedback() {
+  const text = document.getElementById('feedback-text').value.trim();
+  if (!text) { alert('피드백 내용을 입력해주세요.'); return; }
+  const subject = encodeURIComponent('위스키 노트 앱 피드백');
+  const body = encodeURIComponent(text);
+  window.location.href = `mailto:shuttle1207@gmail.com?subject=${subject}&body=${body}`;
+  closeModal('modal-feedback');
+}
+
+function sendInstagramFeedback() {
+  const text = document.getElementById('feedback-text').value.trim();
+  if (!text) { alert('피드백 내용을 입력해주세요.'); return; }
+  const open = () => {
+    window.open('https://www.instagram.com/liquorholic_korea', '_blank');
+  };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => { showToast('내용이 복사되었습니다! DM에 붙여넣기 해주세요 😊'); open(); })
+      .catch(open);
+  } else {
+    open();
+  }
+  closeModal('modal-feedback');
+}
+
+function showToast(msg) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), 3500);
+}
+
 // ── 슬라이더 ──
 function activateSlider(input, valId) {
   input.dataset.set = 'true';

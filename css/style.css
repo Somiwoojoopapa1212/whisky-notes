@@ -606,6 +606,24 @@ body {
 }
 .install-btn:hover { background: rgba(193,127,36,0.28); }
 
+.feedback-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.06);
+  color: rgba(255,255,255,0.65);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  transition: background 0.2s;
+}
+.feedback-btn:hover { background: rgba(255,255,255,0.12); color: #fff; }
+
 .reset-btn {
   display: flex;
   align-items: center;
@@ -623,6 +641,55 @@ body {
   transition: background 0.2s;
 }
 .reset-btn:hover { background: rgba(239,68,68,0.22); }
+
+/* ── 피드백 모달 ── */
+.feedback-desc {
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.feedback-footer {
+  gap: 8px;
+}
+
+.btn-instagram {
+  background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+  color: #fff;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-instagram:hover { opacity: 0.87; }
+
+/* ── 토스트 알림 ── */
+.toast {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(12px);
+  background: #1c1108ee;
+  color: #fff;
+  padding: 12px 22px;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 500;
+  opacity: 0;
+  transition: opacity 0.28s, transform 0.28s;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  max-width: 90vw;
+  text-align: center;
+}
+.toast.show {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
 
 /* ── 점수 슬라이더 ── */
 .slider-row {

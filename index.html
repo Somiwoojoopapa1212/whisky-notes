@@ -44,6 +44,9 @@
         <button class="install-btn" id="install-btn" onclick="installApp()" style="display:none">
           <span>📲</span><span>앱 설치</span>
         </button>
+        <button class="feedback-btn" onclick="openFeedbackModal()">
+          <span>💬</span><span>피드백 보내기</span>
+        </button>
         <button class="reset-btn" onclick="resetAllData()">
           <span>🗑️</span><span>전체 데이터 초기화</span>
         </button>
@@ -422,7 +425,35 @@
       <span class="bottom-nav-icon">📊</span>
       <span class="bottom-nav-label">통계</span>
     </button>
+    <button class="bottom-nav-item" onclick="openFeedbackModal()">
+      <span class="bottom-nav-icon">💬</span>
+      <span class="bottom-nav-label">피드백</span>
+    </button>
   </nav>
+
+  <!-- 피드백 모달 -->
+  <div class="modal-overlay" id="modal-feedback">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>피드백 보내기</h2>
+        <button class="btn-close" onclick="closeModal('modal-feedback')">×</button>
+      </div>
+      <div class="modal-body">
+        <p class="feedback-desc">앱 사용 중 불편한 점이나 개선 요청 사항을 알려주세요!</p>
+        <div class="form-group" style="margin-top:16px">
+          <textarea id="feedback-text" placeholder="자유롭게 작성해주세요..." rows="6"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer feedback-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-feedback')">취소</button>
+        <button class="btn btn-instagram" onclick="sendInstagramFeedback()">📸 인스타그램</button>
+        <button class="btn btn-primary" onclick="sendEmailFeedback()">✉️ 이메일</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 토스트 알림 -->
+  <div id="toast" class="toast"></div>
 
   <script src="js/storage.js"></script>
   <script src="js/app.js"></script>
