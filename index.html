@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>위스키 노트</title>
+
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#c17f24" />
+
+  <!-- iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="위스키 노트" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- 사이드바 -->
+    <nav class="sidebar">
+      <div class="logo">
+        <span class="logo-icon">🥃</span>
+        <span class="logo-text">위스키 노트</span>
+      </div>
+      <ul class="nav-menu">
+        <li class="nav-item active" data-page="collection">
+          <span class="nav-icon">📦</span>
+          <span>컬렉션</span>
+        </li>
+        <li class="nav-item" data-page="tasting">
+          <span class="nav-icon">📝</span>
+          <span>시음 노트</span>
+        </li>
+        <li class="nav-item" data-page="stats">
+          <span class="nav-icon">📊</span>
+          <span>통계</span>
+        </li>
+      </ul>
+      <div class="sidebar-footer">
+        <button class="install-btn" id="install-btn" onclick="installApp()" style="display:none">
+          <span>📲</span><span>앱 설치</span>
+        </button>
+      </div>
+    </nav>
+
+    <!-- 메인 -->
+    <main class="main-content">
+
+      <!-- 컬렉션 페이지 -->
+      <div id="page-collection" class="page active">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">위스키 컬렉션</h1>
+            <p class="page-subtitle" id="collection-subtitle"></p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddWhiskyModal()">+ 위스키 추가</button>
+        </div>
+        <div class="tab-bar">
+          <button class="tab active" data-status="all">전체</button>
+          <button class="tab" data-status="unopened">미개봉</button>
+          <button class="tab" data-status="opened">개봉중</button>
+          <button class="tab" data-status="finished">완음</button>
+        </div>
+        <div class="whisky-grid" id="whisky-grid"></div>
+        <div class="empty-state" id="collection-empty" style="display:none">
+          <div class="empty-icon">🥃</div>
+          <p>보유한 위스키를 추가해보세요!</p>
+          <button class="btn btn-primary" onclick="openAddWhiskyModal()">위스키 추가하기</button>
+        </div>
+      </div>
+
+      <!-- 시음 노트 페이지 -->
+      <div id="page-tasting" class="page">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">시음 노트</h1>
+            <p class="page-subtitle" id="tasting-subtitle"></p>
+          </div>
+          <button class="btn btn-primary" onclick="openAddTastingModal()">+ 시음 기록</button>
+        </div>
+        <div class="filter-bar">
+          <select id="tasting-filter-whisky">
+            <option value="">전체 위스키</option>
+          </select>
+        </div>
+        <div class="tasting-list" id="tasting-list"></div>
+        <div class="empty-state" id="tasting-empty" style="display:none">
+          <div class="empty-icon">📝</div>
+          <p>시음 노트를 기록해보세요!</p>
+          <button class="btn btn-primary" onclick="openAddTastingModal()">시음 기록하기</button>
+        </div>
+      </div>
+
+      <!-- 통계 페이지 -->
+      <div id="page-stats" class="page">
+        <div class="page-header">
+          <div>
+            <h1 class="page-title">시음 통계</h1>
+            <p class="page-subtitle" id="stats-subtitle"></p>
+          </div>
+        </div>
+
+        <div class="stats-period-bar">
+          <button class="stats-tab active" data-period="all">전체</button>
+          <button class="stats-tab" data-period="month">이번 달</button>
+          <button class="stats-tab" data-period="3month">3개월</button>
+          <button class="stats-tab" data-period="6month">6개월</button>
+          <button class="stats-tab" data-period="year">올해</button>
+          <button class="stats-tab" data-period="custom">기간 설정</button>
+        </div>
+
+        <div class="stats-custom-date" id="stats-custom-date" style="display:none">
+          <input type="date" id="stats-date-from" />
+          <span class="date-sep">~</span>
+          <input type="date" id="stats-date-to" />
+          <button class="btn btn-sm btn-primary" onclick="applyCustomPeriod()">적용</button>
+        </div>
+
+        <div class="stats-summary-grid" id="stats-summary"></div>
+
+        <div class="stats-charts-grid">
+          <div class="stats-card">
+            <h3 class="stats-card-title">📍 지역별</h3>
+            <div id="chart-region" class="bar-chart"></div>
+          </div>
+          <div class="stats-card">
+            <h3 class="stats-card-title">🥃 종류별</h3>
+            <div id="chart-type" class="bar-chart"></div>
+          </div>
+          <div class="stats-card">
+            <h3 class="stats-card-title">⏳ 숙성연수별</h3>
+            <div id="chart-age" class="bar-chart"></div>
+          </div>
+          <div class="stats-card">
+            <h3 class="stats-card-title">💧 도수별</h3>
+            <div id="chart-abv" class="bar-chart"></div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- 위스키 추가/수정 모달 -->
+  <div class="modal-overlay" id="modal-whisky">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="modal-whisky-title">위스키 추가</h2>
+        <button class="btn-close" onclick="closeModal('modal-whisky')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-col-2">
+            <label>위스키 이름 *</label>
+            <input type="text" id="whisky-name" placeholder="예: Glenfarclas 25" />
+          </div>
+          <div class="form-group">
+            <label>증류소</label>
+            <input type="text" id="whisky-distillery" placeholder="예: Glenfarclas" />
+          </div>
+          <div class="form-group">
+            <label>지역</label>
+            <select id="whisky-region">
+              <option value="">선택</option>
+              <option value="스페이사이드">스페이사이드</option>
+              <option value="하이랜드">하이랜드</option>
+              <option value="아일라">아일라</option>
+              <option value="로랜드">로랜드</option>
+              <option value="캠벨타운">캠벨타운</option>
+              <option value="아일랜드">아일랜드</option>
+              <option value="일본">일본</option>
+              <option value="미국">미국</option>
+              <option value="캐나다">캐나다</option>
+              <option value="대만">대만</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>종류</label>
+            <select id="whisky-type">
+              <option value="">선택</option>
+              <option value="싱글몰트">싱글몰트</option>
+              <option value="블렌디드몰트">블렌디드몰트</option>
+              <option value="블렌디드">블렌디드</option>
+              <option value="그레인">그레인</option>
+              <option value="버번">버번</option>
+              <option value="라이">라이</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>숙성 연수</label>
+            <input type="text" id="whisky-age" placeholder="예: 12 또는 NAS" />
+          </div>
+          <div class="form-group">
+            <label>도수 (ABV %)</label>
+            <input type="number" id="whisky-abv" placeholder="예: 46" min="0" max="100" step="0.1" />
+          </div>
+          <div class="form-group">
+            <label>용량 (ml)</label>
+            <select id="whisky-bottle-size">
+              <option value="700">700ml</option>
+              <option value="750">750ml</option>
+              <option value="500">500ml</option>
+              <option value="350">350ml</option>
+              <option value="200">200ml</option>
+              <option value="100">100ml</option>
+              <option value="50">50ml (미니)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>상태</label>
+            <select id="whisky-status">
+              <option value="unopened">미개봉</option>
+              <option value="opened">개봉중</option>
+              <option value="finished">완음</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>구매일</label>
+            <input type="date" id="whisky-purchase-date" />
+          </div>
+          <div class="form-group">
+            <label>구매가격 (원)</label>
+            <input type="number" id="whisky-purchase-price" placeholder="예: 150000" min="0" />
+          </div>
+          <div class="form-group form-col-2">
+            <label>구매처</label>
+            <input type="text" id="whisky-purchase-location" placeholder="예: 이마트 트레이더스, 면세점..." />
+          </div>
+          <div class="form-group form-col-2">
+            <label>메모 (캐스크, 시리즈 등)</label>
+            <textarea id="whisky-notes" placeholder="캐스크 타입, 한정판 여부, 특이사항 등..." rows="2"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-whisky')">취소</button>
+        <button class="btn btn-primary" onclick="saveWhisky()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 시음 기록 추가/수정 모달 -->
+  <div class="modal-overlay" id="modal-tasting">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="modal-tasting-title">시음 기록</h2>
+        <button class="btn-close" onclick="closeModal('modal-tasting')">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>위스키 *</label>
+            <select id="tasting-whisky-id">
+              <option value="">위스키 선택</option>
+            </select>
+          </div>
+          <div class="form-group form-col-2" id="custom-whisky-group" style="display:none">
+            <label>위스키 이름 (직접 입력) *</label>
+            <input type="text" id="tasting-custom-whisky" placeholder="예: Ardbeg 10 (바에서 마심)" />
+          </div>
+          <div class="form-group">
+            <label>날짜 *</label>
+            <input type="date" id="tasting-date" />
+          </div>
+          <div class="form-group">
+            <label>시음량 (ml)</label>
+            <input type="number" id="tasting-amount" placeholder="예: 30" min="0" step="1" />
+          </div>
+          <div class="form-group">
+            <label>액체 색깔</label>
+            <select id="tasting-color">
+              <option value="">선택</option>
+              <option value="페일 골든">페일 골든 (Pale Golden)</option>
+              <option value="골든">골든 (Golden)</option>
+              <option value="딥 골든">딥 골든 (Deep Golden)</option>
+              <option value="앰버">앰버 (Amber)</option>
+              <option value="딥 앰버">딥 앰버 (Deep Amber)</option>
+              <option value="구리">구리 (Copper)</option>
+              <option value="딥 구리">딥 구리 (Deep Copper)</option>
+              <option value="마호가니">마호가니 (Mahogany)</option>
+              <option value="다크 마호가니">다크 마호가니 (Dark Mahogany)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>지역 <span class="auto-fill-hint" id="hint-region"></span></label>
+            <select id="tasting-region">
+              <option value="">선택</option>
+              <option value="스페이사이드">스페이사이드</option>
+              <option value="하이랜드">하이랜드</option>
+              <option value="아일라">아일라</option>
+              <option value="로랜드">로랜드</option>
+              <option value="캠벨타운">캠벨타운</option>
+              <option value="아일랜드">아일랜드</option>
+              <option value="일본">일본</option>
+              <option value="미국">미국</option>
+              <option value="캐나다">캐나다</option>
+              <option value="대만">대만</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>종류 <span class="auto-fill-hint" id="hint-type"></span></label>
+            <select id="tasting-type">
+              <option value="">선택</option>
+              <option value="싱글몰트">싱글몰트</option>
+              <option value="블렌디드몰트">블렌디드몰트</option>
+              <option value="블렌디드">블렌디드</option>
+              <option value="그레인">그레인</option>
+              <option value="버번">버번</option>
+              <option value="라이">라이</option>
+              <option value="기타">기타</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>숙성 연수</label>
+            <input type="text" id="tasting-age" placeholder="예: 12 또는 NAS" />
+          </div>
+          <div class="form-group">
+            <label>도수 (ABV %)</label>
+            <input type="number" id="tasting-abv" placeholder="예: 46" min="0" max="100" step="0.1" />
+          </div>
+          <div class="form-group form-col-2">
+            <label>향 · Nose</label>
+            <textarea id="tasting-nose" placeholder="첫인상, 과일, 꽃, 목재, 스파이시, 스모키 등..." rows="3"></textarea>
+          </div>
+          <div class="form-group form-col-2">
+            <label>맛 · Palate</label>
+            <textarea id="tasting-palate" placeholder="입안에서 느껴지는 맛, 질감, 복합성..." rows="3"></textarea>
+          </div>
+          <div class="form-group form-col-2">
+            <label>피니시 · Finish</label>
+            <textarea id="tasting-finish" placeholder="여운의 길이, 마지막에 남는 맛..." rows="2"></textarea>
+          </div>
+          <div class="form-group">
+            <label>점수 (0 ~ 100)</label>
+            <input type="number" id="tasting-score" placeholder="예: 88" min="0" max="100" />
+          </div>
+          <div class="form-group">
+            <label>메모</label>
+            <input type="text" id="tasting-notes" placeholder="페어링, 날씨, 시음 장소 등..." />
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-tasting')">취소</button>
+        <button class="btn btn-primary" onclick="saveTasting()">저장</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 위스키 상세 모달 -->
+  <div class="modal-overlay" id="modal-detail">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2 id="detail-whisky-name"></h2>
+        <div class="modal-header-actions">
+          <button class="btn btn-sm btn-outline" id="detail-edit-btn">수정</button>
+          <button class="btn-close" onclick="closeModal('modal-detail')">×</button>
+        </div>
+      </div>
+      <div class="modal-body" id="detail-body"></div>
+    </div>
+  </div>
+
+  <!-- 모바일 하단 네비게이션 -->
+  <nav class="bottom-nav">
+    <button class="bottom-nav-item active" data-page="collection">
+      <span class="bottom-nav-icon">📦</span>
+      <span class="bottom-nav-label">컬렉션</span>
+    </button>
+    <button class="bottom-nav-item" data-page="tasting">
+      <span class="bottom-nav-icon">📝</span>
+      <span class="bottom-nav-label">시음 노트</span>
+    </button>
+    <button class="bottom-nav-item" data-page="stats">
+      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-label">통계</span>
+    </button>
+  </nav>
+
+  <script src="js/storage.js"></script>
+  <script src="js/app.js"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>

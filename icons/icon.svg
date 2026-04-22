@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" fill="#ffffff"/>
+  <defs>
+    <clipPath id="gc">
+      <path d="M210,90 L302,90 C340,120 352,185 352,250 C352,320 315,355 277,380 C285,395 315,405 317,410 L317,445 L195,445 L195,410 C197,405 227,395 235,380 C197,355 160,320 160,250 C160,185 172,120 210,90 Z"/>
+    </clipPath>
+    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f0c030"/>
+      <stop offset="100%" stop-color="#a85c10"/>
+    </linearGradient>
+  </defs>
+  <!-- 빈 잔 (미세한 청회색) -->
+  <path d="M210,90 L302,90 C340,120 352,185 352,250 C352,320 315,355 277,380 C285,395 315,405 317,410 L317,445 L195,445 L195,410 C197,405 227,395 235,380 C197,355 160,320 160,250 C160,185 172,120 210,90 Z" fill="rgba(200,225,245,0.15)"/>
+  <!-- 골드 위스키 -->
+  <rect x="100" y="205" width="320" height="270" clip-path="url(#gc)" fill="url(#wg)"/>
+  <!-- 액체 표면 shimmer -->
+  <ellipse cx="256" cy="205" rx="88" ry="6" clip-path="url(#gc)" fill="#f8d050" opacity="0.9"/>
+  <!-- 잔 왼쪽 반사 하이라이트 -->
+  <path d="M215,106 C178,138 165,198 165,258" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="14" stroke-linecap="round"/>
+  <!-- 잔 테두리 -->
+  <path d="M210,90 L302,90 C340,120 352,185 352,250 C352,320 315,355 277,380 C285,395 315,405 317,410 L317,445 L195,445 L195,410 C197,405 227,395 235,380 C197,355 160,320 160,250 C160,185 172,120 210,90 Z" fill="none" stroke="#aaaaaa" stroke-width="11" stroke-linejoin="round"/>
+</svg>
