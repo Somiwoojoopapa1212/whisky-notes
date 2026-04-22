@@ -321,7 +321,7 @@ function openDetailModal(id) {
             <span class="detail-tasting-date">${formatDate(t.date)}</span>
             ${t.amount ? `<span class="detail-tasting-meta">${t.amount}ml</span>` : ''}
             ${t.color ? `<span class="detail-tasting-meta">${colorSwatch(t.color)}${t.color}</span>` : ''}
-            ${t.score ? `<span class="score-badge">${t.score}점</span>` : ''}
+            ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
             <div style="margin-left:auto;display:flex;gap:4px;">
               <button class="btn-icon-sm" onclick="openEditTastingModal('${t.id}')">✏️</button>
               <button class="btn-icon-sm" onclick="deleteTasting('${t.id}', true)">🗑️</button>
@@ -330,6 +330,7 @@ function openDetailModal(id) {
           ${t.nose ? `<div class="detail-tasting-row"><span class="tasting-label">향</span><span>${t.nose}</span></div>` : ''}
           ${t.palate ? `<div class="detail-tasting-row"><span class="tasting-label">맛</span><span>${t.palate}</span></div>` : ''}
           ${t.finish ? `<div class="detail-tasting-row"><span class="tasting-label">피니시</span><span>${t.finish}</span></div>` : ''}
+          ${(t.noseScore || t.palateScore || t.finishScore) ? `<div class="detail-tasting-row"><span class="tasting-label">세부 점수</span><span class="score-badges">${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}</span></div>` : ''}
           ${t.notes ? `<div class="detail-tasting-row"><span class="tasting-label">메모</span><span>${t.notes}</span></div>` : ''}
         </div>`).join('')
     }
@@ -392,7 +393,7 @@ function renderTastingList() {
           <div class="tasting-date">${formatDate(t.date)}</div>
         </div>
         <div class="tasting-header-right">
-          ${t.score ? `<span class="score-badge">${t.score}점</span>` : ''}
+          ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
           <button class="btn-icon-sm" onclick="openEditTastingModal('${t.id}')">✏️</button>
           <button class="btn-icon-sm" onclick="deleteTasting('${t.id}', false)">🗑️</button>
         </div>
@@ -403,6 +404,7 @@ function renderTastingList() {
         ${t.nose ? `<div class="tasting-row"><span class="tasting-label">향</span><span class="tasting-value">${t.nose}</span></div>` : ''}
         ${t.palate ? `<div class="tasting-row"><span class="tasting-label">맛</span><span class="tasting-value">${t.palate}</span></div>` : ''}
         ${t.finish ? `<div class="tasting-row"><span class="tasting-label">피니시</span><span class="tasting-value">${t.finish}</span></div>` : ''}
+        ${(t.noseScore || t.palateScore || t.finishScore) ? `<div class="tasting-row"><span class="tasting-label">세부 점수</span><span class="tasting-value score-badges">${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}</span></div>` : ''}
         ${t.notes ? `<div class="tasting-row"><span class="tasting-label">메모</span><span class="tasting-value">${t.notes}</span></div>` : ''}
       </div>
     `;
@@ -446,7 +448,10 @@ function openEditTastingModal(id) {
   setVal('tasting-nose', t.nose);
   setVal('tasting-palate', t.palate);
   setVal('tasting-finish', t.finish);
-  setVal('tasting-score', t.score);
+  setSliderVal('tasting-nose-score', 'val-nose-score', t.noseScore);
+  setSliderVal('tasting-palate-score', 'val-palate-score', t.palateScore);
+  setSliderVal('tasting-finish-score', 'val-finish-score', t.finishScore);
+  setSliderVal('tasting-score', 'val-total-score', t.score);
   setVal('tasting-notes', t.notes);
   showAutoFillHint(false);
   openModal('modal-tasting');
@@ -468,11 +473,15 @@ function populateTastingWhiskySelect(selectedId) {
 function clearTastingForm() {
   ['tasting-whisky-id','tasting-date','tasting-amount','tasting-color',
    'tasting-region','tasting-type','tasting-age','tasting-abv',
-   'tasting-nose','tasting-palate','tasting-finish','tasting-score','tasting-notes',
+   'tasting-nose','tasting-palate','tasting-finish','tasting-notes',
    'tasting-custom-whisky']
     .forEach(id => setVal(id, ''));
   document.getElementById('custom-whisky-group').style.display = 'none';
   showAutoFillHint(false);
+  resetSlider('tasting-nose-score', 'val-nose-score');
+  resetSlider('tasting-palate-score', 'val-palate-score');
+  resetSlider('tasting-finish-score', 'val-finish-score');
+  resetSlider('tasting-score', 'val-total-score');
 }
 
 function saveTasting() {
@@ -498,7 +507,10 @@ function saveTasting() {
     nose: getVal('tasting-nose').trim(),
     palate: getVal('tasting-palate').trim(),
     finish: getVal('tasting-finish').trim(),
-    score: getVal('tasting-score'),
+    noseScore: getSliderVal('tasting-nose-score'),
+    palateScore: getSliderVal('tasting-palate-score'),
+    finishScore: getSliderVal('tasting-finish-score'),
+    score: getSliderVal('tasting-score'),
     notes: getVal('tasting-notes').trim(),
   };
 
@@ -599,12 +611,12 @@ function renderStats() {
     </div>
     <div class="summary-card">
       <div class="summary-num">${avgScore !== null ? avgScore : '—'}<small>${avgScore !== null ? '점' : ''}</small></div>
-      <div class="summary-label">평균 점수</div>
+      <div class="summary-label">종합 평균 점수</div>
     </div>
   `;
 
   if (all.length === 0) {
-    ['chart-region','chart-type','chart-age','chart-abv'].forEach(id => {
+    ['chart-region','chart-type','chart-age','chart-abv','chart-scores'].forEach(id => {
       document.getElementById(id).innerHTML = '<p class="empty-hint">데이터가 없습니다.</p>';
     });
     return;
@@ -661,6 +673,20 @@ function renderStats() {
     abvCount[v] = (abvCount[v] || 0) + 1;
   });
   renderBarChart('chart-abv', abvCount, abvOrder);
+
+  // 점수 분석
+  const scoreCategories = [
+    { label: '향 (Nose)', key: 'noseScore' },
+    { label: '맛 (Palate)', key: 'palateScore' },
+    { label: '피니시 (Finish)', key: 'finishScore' },
+    { label: '종합', key: 'score' },
+  ];
+  const scoreMap = {};
+  scoreCategories.forEach(({ label, key }) => {
+    const vals = all.filter(t => t[key] !== null && t[key] !== undefined && t[key] !== '').map(t => parseInt(t[key]));
+    if (vals.length) scoreMap[label] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+  });
+  renderBarChart('chart-scores', scoreMap, scoreCategories.map(c => c.label).filter(l => scoreMap[l]));
 }
 
 function renderBarChart(containerId, countMap, order) {
@@ -683,6 +709,43 @@ function renderBarChart(containerId, countMap, order) {
       <span class="bar-count">${count}</span>
     </div>
   `).join('');
+}
+
+// ── 슬라이더 ──
+function activateSlider(input, valId) {
+  input.dataset.set = 'true';
+  input.classList.remove('score-unset');
+  document.getElementById(valId).textContent = input.value;
+}
+
+function resetSlider(sliderId, valId) {
+  const el = document.getElementById(sliderId);
+  if (!el) return;
+  el.value = 75;
+  el.dataset.set = 'false';
+  el.classList.add('score-unset');
+  document.getElementById(valId).textContent = '—';
+}
+
+function getSliderVal(id) {
+  const el = document.getElementById(id);
+  return (el && el.dataset.set === 'true') ? el.value : null;
+}
+
+function setSliderVal(sliderId, valId, val) {
+  const el = document.getElementById(sliderId);
+  if (!el) return;
+  if (val !== null && val !== undefined && val !== '') {
+    el.value = val;
+    el.dataset.set = 'true';
+    el.classList.remove('score-unset');
+    document.getElementById(valId).textContent = val;
+  } else {
+    el.value = 75;
+    el.dataset.set = 'false';
+    el.classList.add('score-unset');
+    document.getElementById(valId).textContent = '—';
+  }
 }
 
 // ── 데이터 초기화 ──
