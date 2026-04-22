@@ -338,15 +338,7 @@
             <textarea id="tasting-nose" placeholder="첫인상, 과일, 꽃, 목재, 스파이시, 스모키 등..." rows="3"></textarea>
           </div>
           <div class="form-group form-col-2">
-            <label>맛 · Palate</label>
-            <textarea id="tasting-palate" placeholder="입안에서 느껴지는 맛, 질감, 복합성..." rows="3"></textarea>
-          </div>
-          <div class="form-group form-col-2">
-            <label>피니시 · Finish</label>
-            <textarea id="tasting-finish" placeholder="여운의 길이, 마지막에 남는 맛..." rows="2"></textarea>
-          </div>
-          <div class="form-group form-col-2">
-            <label>향 · Nose 점수 <span class="slider-score-label" id="val-nose-score">—</span></label>
+            <label>향 점수 <span class="slider-score-label" id="val-nose-score">—</span></label>
             <div class="slider-row">
               <span class="slider-edge">0</span>
               <input type="range" id="tasting-nose-score" min="0" max="100" value="75" data-set="false" class="score-slider score-unset" oninput="activateSlider(this,'val-nose-score')" />
@@ -355,7 +347,11 @@
             </div>
           </div>
           <div class="form-group form-col-2">
-            <label>맛 · Palate 점수 <span class="slider-score-label" id="val-palate-score">—</span></label>
+            <label>맛 · Palate</label>
+            <textarea id="tasting-palate" placeholder="입안에서 느껴지는 맛, 질감, 복합성..." rows="3"></textarea>
+          </div>
+          <div class="form-group form-col-2">
+            <label>맛 점수 <span class="slider-score-label" id="val-palate-score">—</span></label>
             <div class="slider-row">
               <span class="slider-edge">0</span>
               <input type="range" id="tasting-palate-score" min="0" max="100" value="75" data-set="false" class="score-slider score-unset" oninput="activateSlider(this,'val-palate-score')" />
@@ -364,7 +360,11 @@
             </div>
           </div>
           <div class="form-group form-col-2">
-            <label>피니시 · Finish 점수 <span class="slider-score-label" id="val-finish-score">—</span></label>
+            <label>피니시 · Finish</label>
+            <textarea id="tasting-finish" placeholder="여운의 길이, 마지막에 남는 맛..." rows="2"></textarea>
+          </div>
+          <div class="form-group form-col-2">
+            <label>피니시 점수 <span class="slider-score-label" id="val-finish-score">—</span></label>
             <div class="slider-row">
               <span class="slider-edge">0</span>
               <input type="range" id="tasting-finish-score" min="0" max="100" value="75" data-set="false" class="score-slider score-unset" oninput="activateSlider(this,'val-finish-score')" />
