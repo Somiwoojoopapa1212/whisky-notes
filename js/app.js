@@ -685,6 +685,15 @@ function renderBarChart(containerId, countMap, order) {
   `).join('');
 }
 
+// ── 데이터 초기화 ──
+function resetAllData() {
+  if (!confirm('모든 위스키 컬렉션과 시음 노트가 삭제됩니다.\n정말 초기화하시겠습니까?')) return;
+  if (!confirm('⚠️ 이 작업은 되돌릴 수 없습니다.\n계속하시겠습니까?')) return;
+  localStorage.removeItem('whiskies');
+  localStorage.removeItem('tastings');
+  renderPage(currentPage);
+}
+
 // ── 공통 유틸 ──
 function formatDate(str) {
   if (!str) return '';
