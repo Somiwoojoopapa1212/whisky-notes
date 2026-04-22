@@ -881,3 +881,105 @@ body {
 @media (display-mode: standalone) {
   .main-content { padding-top: max(20px, env(safe-area-inset-top)); }
 }
+
+/* ── 하단 더보기 확장 메뉴 ── */
+.more-menu-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 400;
+}
+.more-menu-overlay.open { display: block; }
+
+.more-menu-panel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--card-bg);
+  border-radius: 16px 16px 0 0;
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -4px 24px rgba(0,0,0,0.18);
+  animation: slideUp 0.25s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.more-menu-handle {
+  width: 40px;
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  margin: 12px auto 8px;
+}
+
+.more-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 14px 24px;
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s;
+}
+.more-menu-item:hover { background: var(--secondary); }
+.more-menu-item.danger { color: var(--danger); }
+.more-menu-icon { font-size: 22px; flex-shrink: 0; }
+.more-menu-label { font-weight: 600; font-size: 15px; margin-bottom: 2px; }
+.more-menu-desc { font-size: 12px; color: var(--text-muted); }
+.more-menu-item.danger .more-menu-label { color: var(--danger); }
+.more-menu-item.danger .more-menu-desc { color: rgba(239,68,68,0.65); }
+
+.more-menu-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 4px 0;
+}
+
+/* ── 커뮤니티 통계 모달 ── */
+.community-header {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.community-stat-card {
+  flex: 1;
+  background: var(--primary-light);
+  border-radius: 12px;
+  padding: 16px 10px;
+  text-align: center;
+}
+.community-stat-num {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--primary);
+}
+.community-stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.community-section-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--primary-dark);
+  margin: 20px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+.loading-hint {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--text-muted);
+  font-size: 14px;
+  line-height: 1.7;
+}

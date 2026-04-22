@@ -425,18 +425,47 @@
       <span class="bottom-nav-icon">📊</span>
       <span class="bottom-nav-label">통계</span>
     </button>
-    <button class="bottom-nav-item" onclick="openFeedbackModal()">
-      <span class="bottom-nav-icon">💬</span>
-      <span class="bottom-nav-label">피드백</span>
+    <button class="bottom-nav-item" onclick="openMoreMenu()">
+      <span class="bottom-nav-icon">☰</span>
+      <span class="bottom-nav-label">더보기</span>
     </button>
   </nav>
+
+  <!-- 하단 더보기 확장 메뉴 -->
+  <div id="more-menu-overlay" class="more-menu-overlay" onclick="closeMoreMenu()">
+    <div class="more-menu-panel" onclick="event.stopPropagation()">
+      <div class="more-menu-handle"></div>
+      <button class="more-menu-item" onclick="closeMoreMenu(); openCommunityStats()">
+        <span class="more-menu-icon">👥</span>
+        <div>
+          <div class="more-menu-label">다른 사람 후기</div>
+          <div class="more-menu-desc">위스키 시음 통계 보기</div>
+        </div>
+      </button>
+      <button class="more-menu-item" onclick="closeMoreMenu(); openFeedbackModal()">
+        <span class="more-menu-icon">💬</span>
+        <div>
+          <div class="more-menu-label">피드백하기</div>
+          <div class="more-menu-desc">불편사항 및 개선 요청</div>
+        </div>
+      </button>
+      <div class="more-menu-divider"></div>
+      <button class="more-menu-item danger" onclick="closeMoreMenu(); resetAllData()">
+        <span class="more-menu-icon">🗑️</span>
+        <div>
+          <div class="more-menu-label">초기화하기</div>
+          <div class="more-menu-desc">모든 데이터 삭제</div>
+        </div>
+      </button>
+    </div>
+  </div>
 
   <!-- 피드백 모달 -->
   <div class="modal-overlay" id="modal-feedback">
     <div class="modal">
       <div class="modal-header">
         <h2>피드백 보내기</h2>
-        <button class="btn-close" onclick="closeModal('modal-feedback')">×</button>
+        <button class="btn-close" onclick="closeFeedbackModal()">×</button>
       </div>
       <div class="modal-body">
         <p class="feedback-desc">앱 사용 중 불편한 점이나 개선 요청 사항을 알려주세요!</p>
@@ -445,9 +474,22 @@
         </div>
       </div>
       <div class="modal-footer feedback-footer">
-        <button class="btn btn-outline" onclick="closeModal('modal-feedback')">취소</button>
+        <button class="btn btn-outline" onclick="closeFeedbackModal()">취소</button>
         <button class="btn btn-instagram" onclick="sendInstagramFeedback()">📸 인스타그램</button>
         <button class="btn btn-primary" onclick="sendEmailFeedback()">✉️ 이메일</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 다른사람 후기 (커뮤니티 통계) 모달 -->
+  <div class="modal-overlay" id="modal-community">
+    <div class="modal modal-lg">
+      <div class="modal-header">
+        <h2>👥 다른 사람들의 시음 통계</h2>
+        <button class="btn-close" onclick="closeModal('modal-community')">×</button>
+      </div>
+      <div class="modal-body" id="community-content">
+        <p class="loading-hint">⏳ 불러오는 중...</p>
       </div>
     </div>
   </div>
