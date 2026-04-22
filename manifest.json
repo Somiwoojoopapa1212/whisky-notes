@@ -2,9 +2,11 @@
   "name": "위스키 노트",
   "short_name": "위스키 노트",
   "description": "나만의 위스키 컬렉션과 시음 노트 앱",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/whisky-notes/",
+  "start_url": "/whisky-notes/",
+  "scope": "/whisky-notes/",
   "display": "standalone",
+  "orientation": "portrait",
   "background_color": "#ffffff",
   "theme_color": "#c17f24",
   "lang": "ko",
@@ -13,19 +15,19 @@
       "src": "icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
     },
     {
-      "src": "icons/icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
-      "purpose": "any"
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
     }
   ],
   "categories": ["lifestyle", "utilities"]
