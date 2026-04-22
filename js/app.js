@@ -37,11 +37,6 @@ let statsDateTo = '';
 let _pendingImageDataUrl = null;
 let _deleteImageOnSave = false;
 
-// 바코드 스캐너 상태
-let _barcodeStream = null;
-let _barcodeDetector = null;
-let _barcodeAnimFrame = null;
-
 const STATUS_LABEL = { unopened: '미개봉', opened: '개봉중', finished: '완음' };
 const STATUS_CLASS = { unopened: 'status-unopened', opened: 'status-opened', finished: 'status-finished' };
 
@@ -282,32 +277,12 @@ function _showImagePreview(dataUrl) {
   if (removeBtn) removeBtn.style.display = 'inline-flex';
 }
 
-function compressImage(dataUrl, maxW = 900, quality = 0.75) {
-  return new Promise(resolve => {
-    const img = new Image();
-    img.onload = () => {
-      const scale = Math.min(1, maxW / img.width);
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      resolve(canvas.toDataURL('image/jpeg', quality));
-    };
-    img.src = dataUrl;
-  });
-}
-
 function handleImageSelect(input) {
   const file = input.files[0];
   if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('이미지 파일을 선택해주세요.'); return; }
   const reader = new FileReader();
-  reader.onload = async e => {
-    const compressed = await compressImage(e.target.result);
-    _pendingImageDataUrl = compressed;
-    _deleteImageOnSave = false;
-    _showImagePreview(compressed);
-  };
+  reader.onload = e => Crop.open(e.target.result);
   reader.readAsDataURL(file);
 }
 
@@ -819,76 +794,110 @@ function setConsent(agreed) {
   if (agreed) showToast('감사합니다! 시음 데이터가 익명으로 공유됩니다 🥃');
 }
 
-// ── 바코드 스캐너 ──
-async function openBarcodeScanner() {
-  document.getElementById('barcode-overlay').classList.add('open');
-  document.getElementById('barcode-manual-wrap').style.display = 'none';
-  document.getElementById('barcode-video-wrap').style.display = 'block';
+// ── 사진 자르기 ──
+const Crop = {
+  SIZE: 280,
+  OUT: 700,
+  src: null,
+  nw: 0, nh: 0,
+  zoom: 1, minZoom: 1,
+  ox: 0, oy: 0,
+  dragging: false,
+  lx: 0, ly: 0,
 
-  if (!('BarcodeDetector' in window)) {
-    document.getElementById('barcode-video-wrap').style.display = 'none';
-    document.getElementById('barcode-manual-wrap').style.display = 'block';
-    return;
-  }
+  open(src) {
+    this.src = src;
+    const img = new Image();
+    img.onload = () => {
+      this.nw = img.naturalWidth;
+      this.nh = img.naturalHeight;
+      this.minZoom = Math.max(this.SIZE / this.nw, this.SIZE / this.nh);
+      this.zoom = this.minZoom;
+      this.ox = (this.SIZE - this.nw * this.zoom) / 2;
+      this.oy = (this.SIZE - this.nh * this.zoom) / 2;
+      document.getElementById('crop-img').src = src;
+      document.getElementById('crop-zoom-slider').value = 100;
+      this._render();
+      openModal('modal-crop');
+      this._bind();
+    };
+    img.src = src;
+  },
 
-  try {
-    _barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
-    _barcodeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-    const video = document.getElementById('barcode-video');
-    video.srcObject = _barcodeStream;
-    await video.play();
-    _doScanBarcode();
-  } catch (err) {
-    document.getElementById('barcode-video-wrap').style.display = 'none';
-    document.getElementById('barcode-manual-wrap').style.display = 'block';
-  }
-}
+  _clamp() {
+    const dw = this.nw * this.zoom, dh = this.nh * this.zoom;
+    this.ox = Math.min(0, Math.max(this.ox, this.SIZE - dw));
+    this.oy = Math.min(0, Math.max(this.oy, this.SIZE - dh));
+  },
 
-function _doScanBarcode() {
-  const video = document.getElementById('barcode-video');
-  _barcodeDetector.detect(video).then(codes => {
-    if (codes.length > 0) {
-      closeBarcodeScanner();
-      lookupBarcode(codes[0].rawValue);
-    } else {
-      _barcodeAnimFrame = requestAnimationFrame(_doScanBarcode);
-    }
-  }).catch(() => {
-    _barcodeAnimFrame = requestAnimationFrame(_doScanBarcode);
-  });
-}
+  _render() {
+    const el = document.getElementById('crop-img');
+    if (!el) return;
+    el.style.width  = (this.nw * this.zoom) + 'px';
+    el.style.height = (this.nh * this.zoom) + 'px';
+    el.style.left   = this.ox + 'px';
+    el.style.top    = this.oy + 'px';
+  },
 
-function closeBarcodeScanner() {
-  if (_barcodeAnimFrame) { cancelAnimationFrame(_barcodeAnimFrame); _barcodeAnimFrame = null; }
-  if (_barcodeStream) { _barcodeStream.getTracks().forEach(t => t.stop()); _barcodeStream = null; }
-  document.getElementById('barcode-overlay').classList.remove('open');
-}
+  setZoom(pct) {
+    const nz = Math.max(this.minZoom, this.minZoom * (pct / 100));
+    const cx = this.SIZE / 2, cy = this.SIZE / 2;
+    const ix = (cx - this.ox) / this.zoom, iy = (cy - this.oy) / this.zoom;
+    this.zoom = nz;
+    this.ox = cx - ix * nz;
+    this.oy = cy - iy * nz;
+    this._clamp();
+    this._render();
+  },
 
-async function lookupBarcode(code) {
-  if (!code) return;
-  closeBarcodeScanner();
-  showToast('바코드 검색 중...');
-  try {
-    const res = await fetch(`https://world.openfoodfacts.org/product/${code}.json`);
-    const data = await res.json();
-    if (data.status === 1 && data.product) {
-      const p = data.product;
-      const name = p.product_name || p.product_name_en || p.product_name_ko || '';
-      const brand = p.brands || '';
-      if (name) {
-        setVal('whisky-name', name);
-        if (brand && !getVal('whisky-distillery')) setVal('whisky-distillery', brand);
-        showToast(`"${name}" 정보를 가져왔습니다!`);
-      } else {
-        showToast('제품명을 찾지 못했습니다. 직접 입력해주세요.');
-      }
-    } else {
-      showToast('등록되지 않은 바코드입니다. 직접 입력해주세요.');
-    }
-  } catch {
-    showToast('검색에 실패했습니다. 인터넷 연결을 확인해주세요.');
-  }
-}
+  _pt(e) { return e.touches ? e.touches[0] : e; },
+
+  _down(e) { this.dragging = true; this.lx = this._pt(e).clientX; this.ly = this._pt(e).clientY; },
+  _move(e) {
+    if (!this.dragging) return;
+    if (e.cancelable) e.preventDefault();
+    const p = this._pt(e);
+    this.ox += p.clientX - this.lx; this.oy += p.clientY - this.ly;
+    this.lx = p.clientX; this.ly = p.clientY;
+    this._clamp(); this._render();
+  },
+  _up() { this.dragging = false; },
+
+  _bind() {
+    const el = document.getElementById('crop-container');
+    if (el._bound) return;
+    el._bound = true;
+    el.addEventListener('mousedown',  e => this._down(e));
+    el.addEventListener('mousemove',  e => this._move(e));
+    el.addEventListener('mouseup',    () => this._up());
+    el.addEventListener('mouseleave', () => this._up());
+    el.addEventListener('touchstart', e => this._down(e), { passive: true });
+    el.addEventListener('touchmove',  e => this._move(e), { passive: false });
+    el.addEventListener('touchend',   () => this._up());
+  },
+
+  confirm() {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = this.OUT;
+    const ctx = canvas.getContext('2d');
+    const srcX = -this.ox / this.zoom, srcY = -this.oy / this.zoom;
+    const srcSz = this.SIZE / this.zoom;
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, srcX, srcY, srcSz, srcSz, 0, 0, this.OUT, this.OUT);
+      const result = canvas.toDataURL('image/jpeg', 0.85);
+      _pendingImageDataUrl = result;
+      _deleteImageOnSave = false;
+      _showImagePreview(result);
+      closeModal('modal-crop');
+    };
+    img.src = this.src;
+  },
+};
+
+function cropSetZoom(val) { Crop.setZoom(parseFloat(val)); }
+function confirmCrop() { Crop.confirm(); }
+function cancelCrop() { closeModal('modal-crop'); }
 
 // ── 더보기 메뉴 ──
 function openMoreMenu() {

@@ -180,7 +180,6 @@
             </div>
             <div class="whisky-img-actions">
               <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('whisky-img-file').click()">📷 사진 선택</button>
-              <button type="button" class="btn btn-sm btn-outline" onclick="openBarcodeScanner()">📦 바코드 스캔</button>
               <button type="button" class="btn btn-sm btn-outline" id="whisky-img-remove-btn" style="display:none;color:var(--danger);border-color:rgba(239,68,68,0.4)" onclick="removeImage()">✕ 삭제</button>
             </div>
           </div>
@@ -512,28 +511,30 @@
     </div>
   </div>
 
-  <!-- 바코드 스캐너 -->
-  <div id="barcode-overlay" class="barcode-overlay">
-    <div class="barcode-box">
-      <div class="barcode-top-bar">
-        <span class="barcode-title">📦 바코드 스캔</span>
-        <button class="btn-close" onclick="closeBarcodeScanner()">×</button>
+  <!-- 사진 자르기 모달 -->
+  <div class="modal-overlay" id="modal-crop">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>사진 자르기</h2>
+        <button class="btn-close" onclick="cancelCrop()">×</button>
       </div>
-      <div class="barcode-video-wrap" id="barcode-video-wrap">
-        <video id="barcode-video" autoplay playsinline muted></video>
-        <div class="barcode-scan-frame">
-          <div class="barcode-scan-line"></div>
+      <div class="modal-body crop-modal-body">
+        <div class="crop-wrap">
+          <div class="crop-container" id="crop-container">
+            <img id="crop-img" class="crop-img" draggable="false" alt="" />
+          </div>
         </div>
-      </div>
-      <p class="barcode-guide-text">위스키 병의 바코드를 카메라에 비춰주세요</p>
-      <div id="barcode-manual-wrap" style="display:none">
-        <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;text-align:center">바코드 번호를 직접 입력하세요</p>
-        <div style="display:flex;gap:8px">
-          <input type="number" id="barcode-manual-input" style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px" placeholder="예: 5010019063484" />
-          <button class="btn btn-primary btn-sm" onclick="lookupBarcode(document.getElementById('barcode-manual-input').value)">검색</button>
+        <div class="crop-zoom-row">
+          <span class="crop-zoom-icon">🔍</span>
+          <input type="range" id="crop-zoom-slider" class="crop-zoom-slider" min="100" max="300" value="100" oninput="cropSetZoom(this.value)" />
+          <span class="crop-zoom-icon">🔎</span>
         </div>
+        <p class="crop-hint">드래그로 위치 조절 · 슬라이더로 확대/축소</p>
       </div>
-      <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="closeBarcodeScanner()">취소</button>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="cancelCrop()">취소</button>
+        <button class="btn btn-primary" onclick="confirmCrop()">적용</button>
+      </div>
     </div>
   </div>
 
