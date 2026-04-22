@@ -97,6 +97,11 @@ document.addEventListener('DOMContentLoaded', () => {
       document.getElementById('consent-banner').classList.add('show');
     }, 1500);
   }
+
+  // 자동완성: 외부 클릭 시 닫기
+  document.addEventListener('click', e => {
+    if (!e.target.closest('.ac-wrap') && !e.target.closest('.ac-list')) hideAc();
+  });
 });
 
 function setupNav() {
@@ -794,6 +799,121 @@ function setConsent(agreed) {
   if (agreed) showToast('감사합니다! 시음 데이터가 익명으로 공유됩니다 🥃');
 }
 
+// ── 위스키 이름 자동완성 (Wikidata) ──
+let _acTimer = null;
+
+function onWhiskyNameInput(val) {
+  clearTimeout(_acTimer);
+  hideAc();
+  if (!val || val.trim().length < 2) return;
+  _acTimer = setTimeout(() => fetchAcSuggestions(val.trim()), 380);
+}
+
+async function fetchAcSuggestions(query) {
+  try {
+    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(query)}&language=en&type=item&format=json&origin=*&limit=15`;
+    const res = await fetch(url);
+    const data = await res.json();
+
+    const kw = ['whisky', 'whiskey', 'scotch', 'bourbon', 'single malt', 'blended malt', 'blended', 'rye whiskey', 'grain whisky', 'distillery', 'distilleries'];
+    const results = data.search
+      .filter(item => kw.some(k => (item.description || '').toLowerCase().includes(k)))
+      .slice(0, 7);
+
+    showAc(results);
+  } catch {
+    hideAc();
+  }
+}
+
+function showAc(results) {
+  const input = document.getElementById('whisky-name');
+  const list  = document.getElementById('whisky-autocomplete');
+  if (!input || !list || results.length === 0) { hideAc(); return; }
+
+  const rect = input.getBoundingClientRect();
+  list.style.top   = (rect.bottom + 2) + 'px';
+  list.style.left  = rect.left + 'px';
+  list.style.width = rect.width + 'px';
+
+  list.innerHTML = results.map((item, i) => {
+    const tags = _acTags(item.description || '');
+    return `<li class="ac-item" onmousedown="selectAc(${i})">
+      <div class="ac-name">${item.label}${tags}</div>
+      ${item.description ? `<div class="ac-desc">${item.description}</div>` : ''}
+    </li>`;
+  }).join('');
+
+  list._r = results;
+  list.classList.add('open');
+}
+
+function _acTags(desc) {
+  const d = desc.toLowerCase();
+  const tags = [];
+  if (d.includes('single malt'))    tags.push('싱글몰트');
+  else if (d.includes('blended malt')) tags.push('블렌디드몰트');
+  else if (d.includes('blended'))   tags.push('블렌디드');
+  else if (d.includes('bourbon'))   tags.push('버번');
+  else if (d.includes('rye'))       tags.push('라이');
+  const regionMap = [
+    ['speyside','스페이사이드'],['highland','하이랜드'],['islay','아일라'],
+    ['lowland','로랜드'],['campbeltown','캠벨타운'],['ireland','아일랜드'],
+    ['japan','일본'],['kentucky','미국'],['tennessee','미국'],['canada','캐나다'],['taiwan','대만'],
+  ];
+  for (const [en, ko] of regionMap) {
+    if (d.includes(en)) { tags.push(ko); break; }
+  }
+  return tags.map(t => `<span class="ac-tag">${t}</span>`).join('');
+}
+
+function hideAc() {
+  const list = document.getElementById('whisky-autocomplete');
+  if (list) { list.classList.remove('open'); list.innerHTML = ''; list._r = null; }
+}
+
+function selectAc(idx) {
+  const list = document.getElementById('whisky-autocomplete');
+  const item = list._r?.[idx];
+  if (!item) return;
+
+  setVal('whisky-name', item.label);
+  const desc = (item.description || '').toLowerCase();
+  const autoFilled = [];
+
+  // 지역 자동입력
+  if (!getVal('whisky-region')) {
+    const regionMap = [
+      ['speyside','스페이사이드'],['highland','하이랜드'],['islay','아일라'],
+      ['lowland','로랜드'],['campbeltown','캠벨타운'],['ireland','아일랜드'],
+      ['japan','일본'],['kentucky','미국'],['tennessee','미국'],
+      ['american','미국'],['canada','캐나다'],['taiwan','대만'],['scotland','스코틀랜드'],
+    ];
+    for (const [en, ko] of regionMap) {
+      if (desc.includes(en)) { setVal('whisky-region', ko); autoFilled.push('지역'); break; }
+    }
+  }
+
+  // 종류 자동입력
+  if (!getVal('whisky-type')) {
+    if (desc.includes('single malt'))        { setVal('whisky-type', '싱글몰트');    autoFilled.push('종류'); }
+    else if (desc.includes('blended malt'))  { setVal('whisky-type', '블렌디드몰트'); autoFilled.push('종류'); }
+    else if (desc.includes('blended'))       { setVal('whisky-type', '블렌디드');    autoFilled.push('종류'); }
+    else if (desc.includes('bourbon'))       { setVal('whisky-type', '버번');        autoFilled.push('종류'); }
+    else if (desc.includes('rye'))           { setVal('whisky-type', '라이');        autoFilled.push('종류'); }
+    else if (desc.includes('grain'))         { setVal('whisky-type', '그레인');      autoFilled.push('종류'); }
+  }
+
+  // 증류소명 (distillery 이름이 선택된 경우)
+  if (!getVal('whisky-distillery') && (desc.includes('distillery') || desc.includes('distilleries'))) {
+    const distName = item.label.replace(/\s*distiller(y|ies)\s*/gi, '').trim();
+    if (distName) { setVal('whisky-distillery', distName); autoFilled.push('증류소'); }
+  }
+
+  hideAc();
+  if (autoFilled.length > 0) showToast(`${autoFilled.join(' · ')} 자동 입력됨 ✓`);
+}
+
 // ── 사진 자르기 ──
 const Crop = {
   SIZE: 280,
@@ -1116,7 +1236,10 @@ function openModal(id) {
   const body = overlay.querySelector('.modal-body');
   if (body) body.scrollTop = 0;
 }
-function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+  if (id === 'modal-whisky') hideAc();
+}
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) {
     if (e.target.id === 'modal-feedback') {

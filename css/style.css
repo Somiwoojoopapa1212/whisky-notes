@@ -1114,3 +1114,54 @@ body {
   color: var(--text-muted);
   text-align: center;
 }
+
+/* ── 위스키 이름 자동완성 ── */
+.ac-wrap { position: relative; }
+
+.ac-list {
+  display: none;
+  position: fixed;
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.12);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 1500;
+}
+.ac-list.open { display: block; }
+
+.ac-item {
+  padding: 11px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.13s;
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover { background: var(--secondary); }
+
+.ac-name {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text);
+}
+.ac-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.ac-tag {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 6px;
+  border-radius: 10px;
+  background: var(--primary-light);
+  color: var(--primary-dark);
+  margin-left: 6px;
+  vertical-align: middle;
+}
