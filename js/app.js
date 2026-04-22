@@ -87,6 +87,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   renderPage('collection');
+
+  if (!localStorage.getItem('cloudSyncConsent')) {
+    setTimeout(() => {
+      document.getElementById('consent-banner').classList.add('show');
+    }, 1500);
+  }
 });
 
 function setupNav() {
@@ -514,8 +520,12 @@ function saveTasting() {
     notes: getVal('tasting-notes').trim(),
   };
 
-  if (editingTastingId) Storage.updateTasting(editingTastingId, data);
-  else Storage.addTasting(data);
+  if (editingTastingId) {
+    Storage.updateTasting(editingTastingId, data);
+  } else {
+    Storage.addTasting(data);
+    syncTastingToCloud(data, Storage.getWhiskies());
+  }
 
   closeModal('modal-tasting');
   if (currentPage === 'tasting') renderTastingList();
@@ -709,6 +719,13 @@ function renderBarChart(containerId, countMap, order) {
       <span class="bar-count">${count}</span>
     </div>
   `).join('');
+}
+
+// ── 데이터 공유 동의 ──
+function setConsent(agreed) {
+  localStorage.setItem('cloudSyncConsent', agreed ? 'true' : 'false');
+  document.getElementById('consent-banner').classList.remove('show');
+  if (agreed) showToast('감사합니다! 시음 데이터가 익명으로 공유됩니다 🥃');
 }
 
 // ── 피드백 ──

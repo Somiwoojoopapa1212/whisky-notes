@@ -642,6 +642,38 @@ body {
 }
 .reset-btn:hover { background: rgba(239,68,68,0.22); }
 
+/* ── 데이터 공유 동의 배너 ── */
+.consent-banner {
+  position: fixed;
+  bottom: 90px;
+  left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  width: min(360px, 90vw);
+  background: var(--card-bg);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 22px 20px 18px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.13);
+  z-index: 5000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s, transform 0.3s;
+  text-align: center;
+}
+.consent-banner.show {
+  opacity: 1;
+  pointer-events: all;
+  transform: translateX(-50%) translateY(0);
+}
+.consent-icon { font-size: 30px; margin-bottom: 10px; }
+.consent-text {
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 1.65;
+  margin-bottom: 16px;
+}
+.consent-actions { display: flex; gap: 8px; justify-content: center; }
+
 /* ── 피드백 모달 ── */
 .feedback-desc {
   color: var(--text-muted);
