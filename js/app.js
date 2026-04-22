@@ -33,6 +33,15 @@ let statsPeriod = 'all';
 let statsDateFrom = '';
 let statsDateTo = '';
 
+// 이미지 관련 상태
+let _pendingImageDataUrl = null;
+let _deleteImageOnSave = false;
+
+// 바코드 스캐너 상태
+let _barcodeStream = null;
+let _barcodeDetector = null;
+let _barcodeAnimFrame = null;
+
 const STATUS_LABEL = { unopened: '미개봉', opened: '개봉중', finished: '완음' };
 const STATUS_CLASS = { unopened: 'status-unopened', opened: 'status-opened', finished: 'status-finished' };
 
@@ -172,6 +181,7 @@ function renderCollection() {
     const card = document.createElement('div');
     card.className = 'whisky-card';
     card.innerHTML = `
+      <img class="whisky-card-img" id="thumb-${w.id}" alt="" />
       <div class="whisky-card-top">
         <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
         <div class="whisky-card-actions">
@@ -199,6 +209,12 @@ function renderCollection() {
       </div>
     `;
     grid.appendChild(card);
+    ImageDB.get(w.id).then(img => {
+      if (img) {
+        const thumb = document.getElementById(`thumb-${w.id}`);
+        if (thumb) { thumb.src = img; thumb.style.display = 'block'; }
+      }
+    });
   });
 }
 
@@ -210,7 +226,7 @@ function openAddWhiskyModal() {
   openModal('modal-whisky');
 }
 
-function openEditWhiskyModal(id) {
+async function openEditWhiskyModal(id) {
   editingWhiskyId = id;
   document.getElementById('modal-whisky-title').textContent = '위스키 수정';
   const w = Storage.getWhisky(id);
@@ -227,6 +243,9 @@ function openEditWhiskyModal(id) {
   setVal('whisky-purchase-price', w.purchasePrice);
   setVal('whisky-purchase-location', w.purchaseLocation);
   setVal('whisky-notes', w.notes);
+  clearImageUI();
+  const existingImg = await ImageDB.get(id);
+  if (existingImg) _showImagePreview(existingImg);
   openModal('modal-whisky');
 }
 
@@ -238,9 +257,67 @@ function clearWhiskyForm() {
   setVal('whisky-type', '');
   setVal('whisky-bottle-size', '700');
   setVal('whisky-status', 'unopened');
+  clearImageUI();
 }
 
-function saveWhisky() {
+function clearImageUI() {
+  _pendingImageDataUrl = null;
+  _deleteImageOnSave = false;
+  const preview = document.getElementById('whisky-img-preview');
+  const ph = document.getElementById('whisky-img-ph');
+  const removeBtn = document.getElementById('whisky-img-remove-btn');
+  const fileInput = document.getElementById('whisky-img-file');
+  if (preview) { preview.src = ''; preview.style.display = 'none'; }
+  if (ph) ph.style.display = 'flex';
+  if (removeBtn) removeBtn.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+}
+
+function _showImagePreview(dataUrl) {
+  const preview = document.getElementById('whisky-img-preview');
+  const ph = document.getElementById('whisky-img-ph');
+  const removeBtn = document.getElementById('whisky-img-remove-btn');
+  if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+  if (ph) ph.style.display = 'none';
+  if (removeBtn) removeBtn.style.display = 'inline-flex';
+}
+
+function compressImage(dataUrl, maxW = 900, quality = 0.75) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxW / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = dataUrl;
+  });
+}
+
+function handleImageSelect(input) {
+  const file = input.files[0];
+  if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('이미지 파일을 선택해주세요.'); return; }
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const compressed = await compressImage(e.target.result);
+    _pendingImageDataUrl = compressed;
+    _deleteImageOnSave = false;
+    _showImagePreview(compressed);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeImage() {
+  _pendingImageDataUrl = null;
+  _deleteImageOnSave = true;
+  clearImageUI();
+}
+
+async function saveWhisky() {
   const name = getVal('whisky-name').trim();
   if (!name) { alert('위스키 이름을 입력하세요.'); return; }
   const data = {
@@ -257,21 +334,32 @@ function saveWhisky() {
     purchaseLocation: getVal('whisky-purchase-location').trim(),
     notes: getVal('whisky-notes').trim(),
   };
-  if (editingWhiskyId) Storage.updateWhisky(editingWhiskyId, data);
-  else Storage.addWhisky(data);
+  let savedId;
+  if (editingWhiskyId) {
+    Storage.updateWhisky(editingWhiskyId, data);
+    savedId = editingWhiskyId;
+  } else {
+    const w = Storage.addWhisky(data);
+    savedId = w.id;
+  }
+  if (_pendingImageDataUrl) await ImageDB.save(savedId, _pendingImageDataUrl);
+  else if (_deleteImageOnSave) await ImageDB.delete(savedId);
+  _pendingImageDataUrl = null;
+  _deleteImageOnSave = false;
   closeModal('modal-whisky');
   renderCollection();
 }
 
-function deleteWhisky(id) {
+async function deleteWhisky(id) {
   const w = Storage.getWhisky(id);
   if (!confirm(`"${w?.name}"을(를) 삭제할까요?\n관련 시음 노트도 함께 삭제됩니다.`)) return;
   Storage.deleteWhisky(id);
+  await ImageDB.delete(id);
   renderCollection();
 }
 
 // ── 위스키 상세 모달 ──
-function openDetailModal(id) {
+async function openDetailModal(id) {
   const w = Storage.getWhisky(id);
   if (!w) return;
   const tastings = Storage.getTastingsForWhisky(id).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
@@ -280,6 +368,7 @@ function openDetailModal(id) {
   const avgScore = tastings.filter(t => t.score).length
     ? Math.round(tastings.filter(t => t.score).reduce((s, t) => s + parseInt(t.score), 0) / tastings.filter(t => t.score).length)
     : null;
+  const imgDataUrl = await ImageDB.get(id);
 
   document.getElementById('detail-whisky-name').textContent = w.name;
   document.getElementById('detail-edit-btn').onclick = () => { closeModal('modal-detail'); openEditWhiskyModal(id); };
@@ -295,6 +384,7 @@ function openDetailModal(id) {
   ].filter(([, v]) => v);
 
   document.getElementById('detail-body').innerHTML = `
+    ${imgDataUrl ? `<img class="detail-full-img" src="${imgDataUrl}" alt="${w.name}" />` : ''}
     <div class="detail-top-row">
       <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
       <span class="detail-stats">
@@ -729,6 +819,77 @@ function setConsent(agreed) {
   if (agreed) showToast('감사합니다! 시음 데이터가 익명으로 공유됩니다 🥃');
 }
 
+// ── 바코드 스캐너 ──
+async function openBarcodeScanner() {
+  document.getElementById('barcode-overlay').classList.add('open');
+  document.getElementById('barcode-manual-wrap').style.display = 'none';
+  document.getElementById('barcode-video-wrap').style.display = 'block';
+
+  if (!('BarcodeDetector' in window)) {
+    document.getElementById('barcode-video-wrap').style.display = 'none';
+    document.getElementById('barcode-manual-wrap').style.display = 'block';
+    return;
+  }
+
+  try {
+    _barcodeDetector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128'] });
+    _barcodeStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const video = document.getElementById('barcode-video');
+    video.srcObject = _barcodeStream;
+    await video.play();
+    _doScanBarcode();
+  } catch (err) {
+    document.getElementById('barcode-video-wrap').style.display = 'none';
+    document.getElementById('barcode-manual-wrap').style.display = 'block';
+  }
+}
+
+function _doScanBarcode() {
+  const video = document.getElementById('barcode-video');
+  _barcodeDetector.detect(video).then(codes => {
+    if (codes.length > 0) {
+      closeBarcodeScanner();
+      lookupBarcode(codes[0].rawValue);
+    } else {
+      _barcodeAnimFrame = requestAnimationFrame(_doScanBarcode);
+    }
+  }).catch(() => {
+    _barcodeAnimFrame = requestAnimationFrame(_doScanBarcode);
+  });
+}
+
+function closeBarcodeScanner() {
+  if (_barcodeAnimFrame) { cancelAnimationFrame(_barcodeAnimFrame); _barcodeAnimFrame = null; }
+  if (_barcodeStream) { _barcodeStream.getTracks().forEach(t => t.stop()); _barcodeStream = null; }
+  document.getElementById('barcode-overlay').classList.remove('open');
+}
+
+async function lookupBarcode(code) {
+  if (!code) return;
+  closeBarcodeScanner();
+  showToast('바코드 검색 중...');
+  try {
+    const res = await fetch(`https://world.openfoodfacts.org/product/${code}.json`);
+    const data = await res.json();
+    if (data.status === 1 && data.product) {
+      const p = data.product;
+      const name = p.product_name || p.product_name_en || p.product_name_ko || '';
+      const brand = p.brands || '';
+      if (name) {
+        setVal('whisky-name', name);
+        if (brand && !getVal('whisky-distillery')) setVal('whisky-distillery', brand);
+        showToast(`"${name}" 정보를 가져왔습니다!`);
+      } else {
+        showToast('제품명을 찾지 못했습니다. 직접 입력해주세요.');
+      }
+    } else {
+      showToast('등록되지 않은 바코드입니다. 직접 입력해주세요.');
+    }
+  } catch {
+    showToast('검색에 실패했습니다. 인터넷 연결을 확인해주세요.');
+  }
+}
+
 // ── 더보기 메뉴 ──
 function openMoreMenu() {
   document.getElementById('more-menu-overlay').classList.add('open');
@@ -926,7 +1087,9 @@ function resetAllData() {
   if (!confirm('⚠️ 이 작업은 되돌릴 수 없습니다.\n계속하시겠습니까?')) return;
   localStorage.removeItem('whiskies');
   localStorage.removeItem('tastings');
-  renderPage(currentPage);
+  const req = indexedDB.deleteDatabase('whiskyImagesDB');
+  req.onsuccess = () => { ImageDB._db = null; renderPage(currentPage); };
+  req.onerror = () => renderPage(currentPage);
 }
 
 // ── 공통 유틸 ──

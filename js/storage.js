@@ -50,3 +50,43 @@ const Storage = {
     this.saveTastings(this.getTastings().filter(t => t.id !== id));
   },
 };
+
+const ImageDB = {
+  _db: null,
+  async _open() {
+    if (this._db) return this._db;
+    return new Promise((res, rej) => {
+      const req = indexedDB.open('whiskyImagesDB', 1);
+      req.onupgradeneeded = e => e.target.result.createObjectStore('images', { keyPath: 'id' });
+      req.onsuccess = e => { this._db = e.target.result; res(this._db); };
+      req.onerror = () => rej(req.error);
+    });
+  },
+  async save(id, dataUrl) {
+    const db = await this._open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('images', 'readwrite');
+      tx.objectStore('images').put({ id, dataUrl });
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+    });
+  },
+  async get(id) {
+    const db = await this._open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('images', 'readonly');
+      const req = tx.objectStore('images').get(id);
+      req.onsuccess = () => res(req.result?.dataUrl || null);
+      req.onerror = () => rej(req.error);
+    });
+  },
+  async delete(id) {
+    const db = await this._open();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('images', 'readwrite');
+      tx.objectStore('images').delete(id);
+      tx.oncomplete = res;
+      tx.onerror = () => rej(tx.error);
+    });
+  },
+};

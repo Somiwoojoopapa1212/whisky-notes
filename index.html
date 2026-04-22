@@ -168,6 +168,22 @@
             <label>위스키 이름 *</label>
             <input type="text" id="whisky-name" placeholder="예: Glenfarclas 25" />
           </div>
+          <div class="form-group form-col-2">
+            <label>위스키 사진</label>
+            <input type="file" id="whisky-img-file" accept="image/*" style="display:none" onchange="handleImageSelect(this)" />
+            <div class="whisky-img-zone">
+              <img id="whisky-img-preview" class="whisky-img-preview" style="display:none" alt="위스키 사진" />
+              <div id="whisky-img-ph" class="whisky-img-ph">
+                <div style="font-size:32px">🥃</div>
+                <div style="font-size:13px;margin-top:6px;color:var(--text-muted)">사진을 추가해보세요</div>
+              </div>
+            </div>
+            <div class="whisky-img-actions">
+              <button type="button" class="btn btn-sm btn-outline" onclick="document.getElementById('whisky-img-file').click()">📷 사진 선택</button>
+              <button type="button" class="btn btn-sm btn-outline" onclick="openBarcodeScanner()">📦 바코드 스캔</button>
+              <button type="button" class="btn btn-sm btn-outline" id="whisky-img-remove-btn" style="display:none;color:var(--danger);border-color:rgba(239,68,68,0.4)" onclick="removeImage()">✕ 삭제</button>
+            </div>
+          </div>
           <div class="form-group">
             <label>증류소</label>
             <input type="text" id="whisky-distillery" placeholder="예: Glenfarclas" />
@@ -181,6 +197,7 @@
               <option value="아일라">아일라</option>
               <option value="로랜드">로랜드</option>
               <option value="캠벨타운">캠벨타운</option>
+              <option value="스코틀랜드">스코틀랜드 (블렌디드)</option>
               <option value="아일랜드">아일랜드</option>
               <option value="일본">일본</option>
               <option value="미국">미국</option>
@@ -307,6 +324,7 @@
               <option value="아일라">아일라</option>
               <option value="로랜드">로랜드</option>
               <option value="캠벨타운">캠벨타운</option>
+              <option value="스코틀랜드">스코틀랜드 (블렌디드)</option>
               <option value="아일랜드">아일랜드</option>
               <option value="일본">일본</option>
               <option value="미국">미국</option>
@@ -491,6 +509,31 @@
       <div class="modal-body" id="community-content">
         <p class="loading-hint">⏳ 불러오는 중...</p>
       </div>
+    </div>
+  </div>
+
+  <!-- 바코드 스캐너 -->
+  <div id="barcode-overlay" class="barcode-overlay">
+    <div class="barcode-box">
+      <div class="barcode-top-bar">
+        <span class="barcode-title">📦 바코드 스캔</span>
+        <button class="btn-close" onclick="closeBarcodeScanner()">×</button>
+      </div>
+      <div class="barcode-video-wrap" id="barcode-video-wrap">
+        <video id="barcode-video" autoplay playsinline muted></video>
+        <div class="barcode-scan-frame">
+          <div class="barcode-scan-line"></div>
+        </div>
+      </div>
+      <p class="barcode-guide-text">위스키 병의 바코드를 카메라에 비춰주세요</p>
+      <div id="barcode-manual-wrap" style="display:none">
+        <p style="font-size:13px;color:var(--text-muted);margin-bottom:8px;text-align:center">바코드 번호를 직접 입력하세요</p>
+        <div style="display:flex;gap:8px">
+          <input type="number" id="barcode-manual-input" style="flex:1;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:14px" placeholder="예: 5010019063484" />
+          <button class="btn btn-primary btn-sm" onclick="lookupBarcode(document.getElementById('barcode-manual-input').value)">검색</button>
+        </div>
+      </div>
+      <button class="btn btn-outline" style="width:100%;margin-top:14px" onclick="closeBarcodeScanner()">취소</button>
     </div>
   </div>
 
