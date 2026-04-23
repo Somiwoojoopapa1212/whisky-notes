@@ -843,34 +843,51 @@ function renderTastingList() {
       t.finish ? `피니시 · ${t.finish}` : '',
     ].filter(Boolean).join('  ');
 
+    const hasFlavors = t.flavors && Object.values(t.flavors).some(v => v > 0);
+    const hasDetail = t.nose || t.palate || t.finish || t.notes || hasFlavors
+      || t.noseScore || t.palateScore || t.finishScore;
+
     const card = document.createElement('div');
     card.className = 'tasting-card';
+    card.id = `tasting-card-${t.id}`;
     card.innerHTML = `
-      <div class="card-thumb">
-        <img class="tasting-card-img" id="tasting-thumb-${t.id}" alt="" />
-        <span class="card-thumb-ph">📝</span>
-      </div>
-      <div class="tasting-card-content">
-        <div class="card-row-top">
-          <div>
-            <div class="tasting-whisky-name">${whiskyName}${customBadge}</div>
-            <div class="tasting-date">${formatDate(t.date)}${t.color ? ` · ${colorSwatch(t.color)}${t.color}` : ''}${t.amount ? ` · ${t.amount}ml` : ''}</div>
-          </div>
-          <div class="tasting-header-right">
-            ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
-            <button class="btn-share" title="공유 카드 만들기" onclick="event.stopPropagation(); generateShareCard('${t.id}')">📤</button>
-            <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditTastingModal('${t.id}')">✏️</button>
-            <button class="btn-icon-sm" onclick="event.stopPropagation(); deleteTasting('${t.id}', false)">🗑️</button>
-          </div>
+      <div class="tasting-card-main" onclick="toggleTastingCard('${t.id}')">
+        <div class="card-thumb">
+          <img class="tasting-card-img" id="tasting-thumb-${t.id}" alt="" />
+          <span class="card-thumb-ph">📝</span>
         </div>
-        ${noteSummary ? `<div class="tasting-note-summary">${noteSummary}</div>` : ''}
-        ${(t.noseScore || t.palateScore || t.finishScore) ? `
-          <div class="tasting-score-row">
-            ${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}
-            ${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}
-            ${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}
-          </div>` : ''}
+        <div class="tasting-card-content">
+          <div class="tasting-whisky-name">${whiskyName}${customBadge}</div>
+          <div class="tasting-card-meta-row">
+            <span class="tasting-date">${formatDate(t.date)}${t.color ? ` · ${colorSwatch(t.color)}${t.color}` : ''}${t.amount ? ` · ${t.amount}ml` : ''}</span>
+            <div class="tasting-card-actions" onclick="event.stopPropagation()">
+              ${t.score ? `<span class="score-badge">★ ${t.score}</span>` : ''}
+              <button class="btn-share" title="공유 카드 만들기" onclick="generateShareCard('${t.id}')">📤</button>
+              <button class="btn-icon-sm" onclick="openEditTastingModal('${t.id}')">✏️</button>
+              <button class="btn-icon-sm" onclick="deleteTasting('${t.id}', false)">🗑️</button>
+            </div>
+          </div>
+          ${noteSummary ? `<div class="tasting-note-summary">${noteSummary}</div>` : ''}
+        </div>
+        ${hasDetail ? `<div class="tc-chevron">▾</div>` : ''}
       </div>
+      ${hasDetail ? `
+      <div class="tasting-card-detail" id="tasting-expand-${t.id}" style="display:none">
+        ${hasFlavors ? `<div class="tc-radar-wrap"><canvas id="tc-radar-${t.id}" width="140" height="140"></canvas></div>` : ''}
+        ${t.nose   ? `<div class="tc-note-row"><span class="tasting-label">향</span><span class="tc-note-text">${t.nose}</span></div>` : ''}
+        ${t.palate ? `<div class="tc-note-row"><span class="tasting-label">맛</span><span class="tc-note-text">${t.palate}</span></div>` : ''}
+        ${t.finish ? `<div class="tc-note-row"><span class="tasting-label">피니시</span><span class="tc-note-text">${t.finish}</span></div>` : ''}
+        ${(t.noseScore || t.palateScore || t.finishScore) ? `
+          <div class="tc-note-row">
+            <span class="tasting-label">세부점수</span>
+            <span class="score-badges">
+              ${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}
+              ${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}
+              ${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}
+            </span>
+          </div>` : ''}
+        ${t.notes ? `<div class="tc-note-row"><span class="tasting-label">메모</span><span class="tc-note-text">${t.notes}</span></div>` : ''}
+      </div>` : ''}
     `;
     list.appendChild(card);
 
@@ -886,6 +903,28 @@ function renderTastingList() {
       }
     });
   });
+}
+
+// ── 시음 카드 펼침/접힘 ──
+function toggleTastingCard(id) {
+  const card = document.getElementById(`tasting-card-${id}`);
+  const detail = document.getElementById(`tasting-expand-${id}`);
+  if (!card || !detail) return;
+
+  const opening = !card.classList.contains('expanded');
+  card.classList.toggle('expanded', opening);
+  detail.style.display = opening ? 'flex' : 'none';
+
+  if (opening) {
+    const t = Storage.getTastings().find(t => t.id === id);
+    if (t?.flavors && Object.values(t.flavors).some(v => v > 0)) {
+      const c = document.getElementById(`tc-radar-${id}`);
+      if (c && !c.dataset.rendered) {
+        drawRadarChart(c, t.flavors, { padding: 22, fontSize: 11, labelPad: 16, lineWidth: 1.5, dotRadius: 3 });
+        c.dataset.rendered = 'true';
+      }
+    }
+  }
 }
 
 // ── 시음 노트 모달 ──
