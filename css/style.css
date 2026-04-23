@@ -1482,6 +1482,114 @@ body {
 }
 .detail-radar { border-radius: 50%; background: var(--secondary); }
 
+/* ── 취향 분석 리포트 ── */
+.taste-report-wrap { margin-top: 16px; }
+
+.taste-report-body {
+  display: flex;
+  gap: 28px;
+  align-items: flex-start;
+}
+.taste-report-radar-wrap {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.taste-report-count {
+  font-size: 11px;
+  color: var(--text-muted);
+  text-align: center;
+}
+.taste-report-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
+}
+.taste-report-desc {
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text);
+}
+.taste-flavor-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.taste-flavor-row {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13px;
+}
+.taste-flavor-rank { width: 20px; text-align: center; font-size: 14px; flex-shrink: 0; }
+.taste-flavor-emoji { width: 18px; text-align: center; flex-shrink: 0; font-size: 14px; }
+.taste-flavor-name { width: 54px; color: var(--text-muted); font-size: 12px; flex-shrink: 0; }
+.taste-flavor-track {
+  flex: 1;
+  height: 10px;
+  background: var(--secondary);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.taste-flavor-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  min-width: 0;
+}
+.taste-flavor-score {
+  width: 28px;
+  text-align: right;
+  font-weight: 700;
+  color: var(--primary-dark);
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.taste-style-box {
+  background: var(--primary-light);
+  border: 1px solid rgba(193,127,36,0.2);
+  border-radius: 10px;
+  padding: 14px 16px;
+}
+.taste-style-title {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--primary-dark);
+  margin-bottom: 10px;
+}
+.taste-style-tag {
+  display: inline-block;
+  background: var(--primary);
+  color: #fff;
+  font-weight: 700;
+  font-size: 13px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  margin-bottom: 10px;
+}
+.taste-style-desc {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.65;
+  margin-bottom: 6px;
+}
+.taste-style-examples {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+@media (max-width: 640px) {
+  .taste-report-body { flex-direction: column; align-items: center; }
+  .taste-report-info { width: 100%; }
+}
+
 /* ── 공유 카드 버튼 ── */
 .btn-share {
   background: none;

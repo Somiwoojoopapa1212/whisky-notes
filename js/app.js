@@ -1152,6 +1152,7 @@ function renderStats() {
     ['chart-region','chart-type','chart-age','chart-abv','chart-scores'].forEach(id => {
       document.getElementById(id).innerHTML = '<p class="empty-hint">데이터가 없습니다.</p>';
     });
+    renderTasteReport([]);
     return;
   }
 
@@ -1220,6 +1221,108 @@ function renderStats() {
     if (vals.length) scoreMap[label] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
   });
   renderBarChart('chart-scores', scoreMap, scoreCategories.map(c => c.label).filter(l => scoreMap[l]));
+  renderTasteReport(all);
+}
+
+// ── 취향 분석 리포트 ──
+function renderTasteReport(all) {
+  const container = document.getElementById('taste-report-section');
+  if (!container) return;
+
+  const withFlavors = all.filter(t => t.flavors && Object.values(t.flavors).some(v => v > 0));
+
+  if (withFlavors.length === 0) {
+    container.innerHTML = '<p class="empty-hint" style="padding:10px 0">향미 휠 데이터가 있는 시음 기록이 없습니다.<br>시음 노트 작성 시 향미 슬라이더를 입력해보세요.</p>';
+    return;
+  }
+
+  // 향미 축별 평균 계산
+  const avgFlavors = {};
+  FLAVORS.forEach(f => {
+    const vals = withFlavors.map(t => t.flavors[f.key] || 0);
+    avgFlavors[f.key] = vals.reduce((a, b) => a + b, 0) / vals.length;
+  });
+
+  // 높은 점수 순 정렬
+  const sorted = FLAVORS.slice().sort((a, b) => avgFlavors[b.key] - avgFlavors[a.key]);
+  const desc     = _tasteDesc(avgFlavors, sorted);
+  const styleRec = _tasteStyleRec(sorted, avgFlavors);
+  const medals   = ['🥇', '🥈', '🥉', '', '', ''];
+
+  container.innerHTML = `
+    <div class="taste-report-body">
+      <div class="taste-report-radar-wrap">
+        <canvas id="taste-report-canvas" width="180" height="180"></canvas>
+        <div class="taste-report-count">${withFlavors.length}개 시음 기록 분석</div>
+      </div>
+      <div class="taste-report-info">
+        <div class="taste-report-desc">${desc}</div>
+        <div class="taste-flavor-bars">
+          ${sorted.map((f, i) => `
+            <div class="taste-flavor-row">
+              <span class="taste-flavor-rank">${medals[i]}</span>
+              <span class="taste-flavor-emoji">${f.emoji}</span>
+              <span class="taste-flavor-name">${f.label}</span>
+              <div class="taste-flavor-track">
+                <div class="taste-flavor-fill" style="width:${(avgFlavors[f.key] / 5 * 100).toFixed(1)}%"></div>
+              </div>
+              <span class="taste-flavor-score">${avgFlavors[f.key].toFixed(1)}</span>
+            </div>
+          `).join('')}
+        </div>
+        ${styleRec ? `<div class="taste-style-box"><div class="taste-style-title">🎯 어울리는 위스키 스타일</div>${styleRec}</div>` : ''}
+      </div>
+    </div>
+  `;
+
+  // innerHTML 설정 후 캔버스 렌더
+  const c = document.getElementById('taste-report-canvas');
+  if (c) drawRadarChart(c, avgFlavors, { padding: 34, fontSize: 12, labelPad: 20, lineWidth: 2.5, dotRadius: 4,
+    fillColor: 'rgba(193,127,36,0.18)', lineColor: 'rgba(193,127,36,0.9)', labelColor: '#7a6a5a' });
+}
+
+function _tasteDesc(avgFlavors, sorted) {
+  const maxScore = Math.max(...Object.values(avgFlavors));
+  const minScore = Math.min(...Object.values(avgFlavors));
+  const top1 = sorted[0], top2 = sorted[1];
+  const t1 = avgFlavors[top1.key], t2 = avgFlavors[top2.key];
+
+  if (maxScore < 1.0)
+    return '아직 향미 선호가 뚜렷하게 나타나지 않습니다. 더 많은 시음 기록을 쌓아보세요 🥃';
+  if (maxScore - minScore < 0.8)
+    return `다양한 향미를 고루 즐기는 <strong>균형 잡힌 취향</strong>입니다. 어떤 스타일의 위스키도 편안하게 즐기실 수 있는 유연한 미각을 가지셨습니다.`;
+  if (t2 >= t1 * 0.85)
+    return `<strong>${top1.emoji} ${top1.label}</strong>과 <strong>${top2.emoji} ${top2.label}</strong>이 모두 강한 복합적인 취향입니다. 두 향미가 조화를 이루는 위스키를 특히 좋아하십니다.`;
+
+  const notes = {
+    smoky:  '피트와 훈연의 강렬함에서 매력을 느끼시는군요.',
+    sweet:  '달콤하고 부드러운 캐릭터에 끌리시는군요.',
+    fruity: '화사하고 생동감 있는 과일향을 즐기시는군요.',
+    oaky:   '오크의 깊은 풍미와 묵직한 숙성감을 선호하시는군요.',
+    spicy:  '활기차고 자극적인 스파이스를 즐기시는군요.',
+    grainy: '곡물의 소박하고 깔끔한 풍미를 선호하시는군요.',
+  };
+  return `<strong>${top1.emoji} ${top1.label}</strong> 향미를 가장 선호하는 뚜렷한 취향입니다. ${notes[top1.key] || ''}`;
+}
+
+function _tasteStyleRec(sorted, avgFlavors) {
+  const topKey = sorted[0].key;
+  if (avgFlavors[topKey] < 1.5) return null;
+
+  const styles = {
+    smoky:  { tag:'🔥 아일라 싱글몰트',     desc:'피트향과 훈연의 강렬한 개성이 살아있는 스타일입니다.',       ex:'Ardbeg · Laphroaig · Lagavulin · Bruichladdich Octomore' },
+    oaky:   { tag:'🌳 셰리 캐스크 싱글몰트', desc:'오크의 깊은 풍미와 말린 과일, 스파이스가 조화로운 스타일입니다.', ex:'GlenAllachie · Glenfarclas · Macallan · Aberlour' },
+    sweet:  { tag:'🍯 버번 캐스크 숙성 몰트', desc:'바닐라, 꿀, 트로피컬 과일의 달콤하고 부드러운 스타일입니다.', ex:'Balvenie · Glenmorangie · Woodford Reserve · Buffalo Trace' },
+    fruity: { tag:'🍎 스페이사이드 싱글몰트', desc:'화사하고 우아한 과일향이 특징인 스코틀랜드의 클래식 스타일입니다.', ex:'Glenfarclas · Craigellachie · BenRiach · Benromach' },
+    spicy:  { tag:'🌶️ 하이랜드 / 라이 위스키', desc:'풍부한 스파이스와 드라이한 개성이 두드러지는 스타일입니다.', ex:'Dalmore · Highland Park · Old Pulteney · Rittenhouse Rye' },
+    grainy: { tag:'🌾 블렌디드 / 그레인 위스키', desc:'부드럽고 깔끔한 곡물 풍미가 매력적인 접근성 좋은 스타일입니다.', ex:'Johnnie Walker Blue · Chivas 18 · Compass Box · Nikka From The Barrel' },
+  };
+
+  const s = styles[topKey];
+  if (!s) return null;
+  return `<span class="taste-style-tag">${s.tag}</span>
+    <div class="taste-style-desc">${s.desc}</div>
+    <div class="taste-style-examples">추천 위스키: <strong>${s.ex}</strong></div>`;
 }
 
 function renderBarChart(containerId, countMap, order) {
