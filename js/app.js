@@ -454,6 +454,24 @@ function renderPage(page) {
   else if (page === 'wishlist') renderWishlist();
 }
 
+// ── 가성비 계산 ──
+function calcWhiskyValue(w, tastings) {
+  if (!w.purchasePrice || parseInt(w.purchasePrice) <= 0) return null;
+  const scored = tastings.filter(t => t.score !== null && t.score !== undefined && t.score !== '');
+  if (scored.length === 0) return null;
+  const avgScore = scored.reduce((s, t) => s + parseInt(t.score), 0) / scored.length;
+  const priceUnit = parseInt(w.purchasePrice) / 10000; // 만원 단위
+  return { avgScore: Math.round(avgScore), valueIndex: avgScore / priceUnit, tastingCount: scored.length };
+}
+
+function getValueGrade(index) {
+  if (index >= 8) return { grade: 'S', label: 'S급 가성비', cls: 'vg-S' };
+  if (index >= 5) return { grade: 'A', label: 'A급 가성비', cls: 'vg-A' };
+  if (index >= 3) return { grade: 'B', label: 'B급 가성비', cls: 'vg-B' };
+  if (index >= 2) return { grade: 'C', label: 'C급 가성비', cls: 'vg-C' };
+  return { grade: 'D', label: '비교적 비쌈', cls: 'vg-D' };
+}
+
 // ══════════════════════════════
 // ── 컬렉션 ──
 // ══════════════════════════════
@@ -485,6 +503,8 @@ function renderCollection() {
     const tastings = Storage.getTastingsForWhisky(w.id);
     const totalPoured = tastings.reduce((s, t) => s + (parseFloat(t.amount) || 0), 0);
     const remaining = w.bottleSize ? Math.max(0, parseFloat(w.bottleSize) - totalPoured) : null;
+    const valueData = calcWhiskyValue(w, tastings);
+    const vg = valueData ? getValueGrade(valueData.valueIndex) : null;
 
     const card = document.createElement('div');
     card.className = 'whisky-card';
@@ -509,6 +529,7 @@ function renderCollection() {
         </div>
         <div class="card-row-bottom">
           <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
+          ${vg ? `<span class="value-grade-badge ${vg.cls}" title="${vg.label} (${valueData.valueIndex.toFixed(1)}점/만원)">💰${vg.grade}</span>` : ''}
           <span class="footer-left">📝 ${tastings.length}회
             ${w.status === 'opened' && remaining !== null ? `<span class="remaining">· 잔여 ≈${remaining.toFixed(0)}ml</span>` : ''}
           </span>
@@ -1154,6 +1175,7 @@ function renderStats() {
       document.getElementById(id).innerHTML = '<p class="empty-hint">데이터가 없습니다.</p>';
     });
     renderTasteReport([]);
+    renderValueRanking();
     return;
   }
 
@@ -1223,6 +1245,7 @@ function renderStats() {
   });
   renderBarChart('chart-scores', scoreMap, scoreCategories.map(c => c.label).filter(l => scoreMap[l]));
   renderTasteReport(all);
+  renderValueRanking();
 }
 
 // ── 취향 분석 리포트 ──
@@ -1324,6 +1347,61 @@ function _tasteStyleRec(sorted, avgFlavors) {
   return `<span class="taste-style-tag">${s.tag}</span>
     <div class="taste-style-desc">${s.desc}</div>
     <div class="taste-style-examples">추천 위스키: <strong>${s.ex}</strong></div>`;
+}
+
+// ── 가성비 랭킹 ──
+function renderValueRanking() {
+  const container = document.getElementById('value-ranking-section');
+  if (!container) return;
+
+  const whiskies = Storage.getWhiskies();
+  const results = whiskies
+    .map(w => {
+      const tastings = Storage.getTastingsForWhisky(w.id);
+      const v = calcWhiskyValue(w, tastings);
+      return v ? { whisky: w, ...v } : null;
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.valueIndex - a.valueIndex);
+
+  if (results.length === 0) {
+    container.innerHTML = '<p class="empty-hint" style="padding:10px 0">구매 가격과 시음 점수가 있는 위스키가 없습니다.<br>컬렉션에 구매가격을 입력하고 시음 점수를 기록해보세요.</p>';
+    return;
+  }
+
+  const medals = ['🥇', '🥈', '🥉'];
+  const maxIndex = results[0].valueIndex;
+
+  container.innerHTML = `
+    <div class="value-rank-legend">
+      💡 가성비 지수 = 평균 점수 ÷ (구매가격 / 만원) · 높을수록 가성비 우수
+    </div>
+    ${results.map((r, i) => {
+      const grade = getValueGrade(r.valueIndex);
+      const barW = (r.valueIndex / maxIndex * 100).toFixed(1);
+      return `
+        <div class="value-rank-row">
+          <div class="value-rank-num">${medals[i] || (i + 1)}</div>
+          <div class="value-rank-info">
+            <div class="value-rank-name">${r.whisky.name}</div>
+            <div class="value-rank-meta">
+              ₩${parseInt(r.whisky.purchasePrice).toLocaleString()} · 평균 <strong>${r.avgScore}점</strong> · ${r.tastingCount}회 시음
+            </div>
+            <div class="value-rank-bar-track"><div class="value-rank-bar-fill ${grade.cls}-bar" style="width:${barW}%"></div></div>
+          </div>
+          <div class="value-grade-badge ${grade.cls}" title="${grade.label}">${grade.grade}</div>
+          <div class="value-index-num">${r.valueIndex.toFixed(1)}</div>
+        </div>
+      `;
+    }).join('')}
+    <div class="value-grade-legend">
+      <span class="value-grade-badge vg-S">S</span> ≥8 &nbsp;
+      <span class="value-grade-badge vg-A">A</span> 5~8 &nbsp;
+      <span class="value-grade-badge vg-B">B</span> 3~5 &nbsp;
+      <span class="value-grade-badge vg-C">C</span> 2~3 &nbsp;
+      <span class="value-grade-badge vg-D">D</span> &lt;2
+    </div>
+  `;
 }
 
 function renderBarChart(containerId, countMap, order) {
