@@ -1076,7 +1076,8 @@ body {
 /* ── 시음 노트 모달 사진 업로드 영역 ── */
 .tasting-img-zone {
   width: 100%;
-  height: 150px;
+  aspect-ratio: 1 / 1;
+  max-height: 300px;
   border: 2px dashed var(--border);
   border-radius: 10px;
   display: flex;
