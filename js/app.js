@@ -799,6 +799,136 @@ function setConsent(agreed) {
   if (agreed) showToast('감사합니다! 시음 데이터가 익명으로 공유됩니다 🥃');
 }
 
+// ── 설정 ──
+function openSettingsModal() {
+  document.getElementById('vision-api-key-input').value = localStorage.getItem('visionApiKey') || '';
+  openModal('modal-settings');
+}
+function saveSettings() {
+  const key = document.getElementById('vision-api-key-input').value.trim();
+  if (key) localStorage.setItem('visionApiKey', key);
+  else localStorage.removeItem('visionApiKey');
+  closeModal('modal-settings');
+  showToast(key ? 'API 키가 저장되었습니다 ✓' : 'API 키가 삭제되었습니다');
+}
+
+// ── 라벨 스캔 (Google Vision OCR) ──
+function openLabelScanner() {
+  const apiKey = localStorage.getItem('visionApiKey');
+  if (!apiKey) {
+    if (confirm('Google Vision API 키가 필요합니다.\n설정 화면으로 이동할까요?')) openSettingsModal();
+    return;
+  }
+  document.getElementById('label-scan-input').click();
+}
+
+function handleLabelScan(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+
+  const apiKey = localStorage.getItem('visionApiKey');
+  if (!apiKey) return;
+
+  showToast('라벨 분석 중... ⏳');
+
+  const reader = new FileReader();
+  reader.onload = async e => {
+    try {
+      const base64 = await _resizeForVision(e.target.result);
+      const result = await _callVisionAPI(base64, apiKey);
+      const parsed = _parseVisionOCR(result);
+      await _applyLabelResult(parsed);
+    } catch (err) {
+      const msg = err.message || '';
+      if (msg.includes('API key')) showToast('API 키가 올바르지 않습니다. 설정을 확인해주세요.');
+      else if (msg.includes('quota')) showToast('API 사용량이 초과됐습니다.');
+      else showToast('라벨 인식에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function _resizeForVision(dataUrl, maxPx = 1200) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxPx / Math.max(img.width, img.height));
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      resolve(canvas.toDataURL('image/jpeg', 0.9).split(',')[1]);
+    };
+    img.src = dataUrl;
+  });
+}
+
+async function _callVisionAPI(base64, apiKey) {
+  const res = await fetch(
+    `https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        requests: [{
+          image: { content: base64 },
+          features: [{ type: 'TEXT_DETECTION', maxResults: 1 }],
+        }]
+      }),
+    }
+  );
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  const r = data.responses?.[0];
+  if (r?.error) throw new Error(r.error.message);
+  return r;
+}
+
+function _parseVisionOCR(response) {
+  const fullText = response?.fullTextAnnotation?.text
+    || response?.textAnnotations?.[0]?.description
+    || '';
+  if (!fullText.trim()) return null;
+
+  const lines = fullText.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length > 1 && /[a-zA-Z가-힣]/.test(l))
+    .filter(l => !/^[\d\s%\.]+$/.test(l));
+
+  // ABV 추출
+  const abvMatch = fullText.match(/(\d{2,3}(?:\.\d)?)\s*%(?:\s*(?:abv|vol|alc))?/i);
+  // 숙성연수 추출
+  const ageMatch = fullText.match(/(\d+)\s*(?:year|yr|yo|y\.o\.)/i)
+    || fullText.match(/(\d+)\s*년/);
+
+  const nameQuery = lines.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim();
+
+  return {
+    nameQuery,
+    abv: abvMatch ? abvMatch[1] : null,
+    age: ageMatch ? ageMatch[1] : null,
+  };
+}
+
+async function _applyLabelResult(parsed) {
+  if (!parsed || !parsed.nameQuery) {
+    showToast('텍스트를 인식하지 못했습니다. 라벨이 선명한지 확인해주세요.');
+    return;
+  }
+
+  // 인식된 값 자동입력
+  if (parsed.abv && !getVal('whisky-abv'))   setVal('whisky-abv', parsed.abv);
+  if (parsed.age && !getVal('whisky-age'))   setVal('whisky-age', parsed.age);
+
+  // 이름 필드에 OCR 결과를 넣고 Wikidata 자동완성 트리거
+  const input = document.getElementById('whisky-name');
+  if (input) input.value = parsed.nameQuery;
+  await fetchAcSuggestions(parsed.nameQuery);
+
+  showToast('라벨 인식 완료! 아래 목록에서 선택해주세요 👆');
+}
+
 // ── 위스키 이름 자동완성 (Wikidata) ──
 let _acTimer = null;
 

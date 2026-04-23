@@ -1116,7 +1116,13 @@ body {
 }
 
 /* ── 위스키 이름 자동완성 ── */
-.ac-wrap { position: relative; }
+.ac-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ac-wrap input { flex: 1; min-width: 0; }
 
 .ac-list {
   display: none;
@@ -1154,6 +1160,52 @@ body {
   margin-top: 2px;
   line-height: 1.4;
 }
+.label-scan-btn {
+  flex-shrink: 0;
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--text-muted);
+  line-height: 1;
+  transition: all 0.15s;
+}
+.label-scan-btn:hover {
+  background: var(--primary-light);
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+/* ── 설정 가이드 ── */
+.setup-guide {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.setup-guide summary {
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--text-muted);
+  background: var(--secondary);
+  list-style: none;
+}
+.setup-guide summary::-webkit-details-marker { display: none; }
+.setup-guide summary::before { content: '▶ '; font-size: 10px; }
+.setup-guide[open] summary::before { content: '▼ '; }
+.setup-steps {
+  margin: 0;
+  padding: 12px 14px 12px 30px;
+  font-size: 13px;
+  color: var(--text-muted);
+  line-height: 2;
+}
+.setup-steps a { color: var(--primary); }
+
 .ac-tag {
   display: inline-block;
   font-size: 10px;
