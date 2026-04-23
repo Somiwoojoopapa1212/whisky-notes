@@ -38,6 +38,7 @@ let _pendingImageDataUrl = null;
 let _deleteImageOnSave = false;
 let _pendingTastingImageDataUrl = null;
 let _deleteTastingImageOnSave = false;
+let _cropCallback = null;
 
 const STATUS_LABEL = { unopened: '미개봉', opened: '개봉중', finished: '완음' };
 const STATUS_CLASS = { unopened: 'status-unopened', opened: 'status-opened', finished: 'status-finished' };
@@ -294,7 +295,14 @@ function handleImageSelect(input) {
   if (!file) return;
   if (!file.type.startsWith('image/')) { showToast('이미지 파일을 선택해주세요.'); return; }
   const reader = new FileReader();
-  reader.onload = e => Crop.open(e.target.result);
+  reader.onload = e => {
+    _cropCallback = result => {
+      _pendingImageDataUrl = result;
+      _deleteImageOnSave = false;
+      _showImagePreview(result);
+    };
+    Crop.open(e.target.result);
+  };
   reader.readAsDataURL(file);
 }
 
@@ -331,11 +339,15 @@ function handleTastingImageSelect(input) {
   const file = input.files[0];
   input.value = '';
   if (!file) return;
+  if (!file.type.startsWith('image/')) { showToast('이미지 파일을 선택해주세요.'); return; }
   const reader = new FileReader();
   reader.onload = e => {
-    _pendingTastingImageDataUrl = e.target.result;
-    _deleteTastingImageOnSave = false;
-    _showTastingImagePreview(e.target.result);
+    _cropCallback = result => {
+      _pendingTastingImageDataUrl = result;
+      _deleteTastingImageOnSave = false;
+      _showTastingImagePreview(result);
+    };
+    Crop.open(e.target.result);
   };
   reader.readAsDataURL(file);
 }
@@ -510,31 +522,54 @@ function renderTastingList() {
       ? (t.customWhiskeyName || '(이름 없음)')
       : (Storage.getWhisky(t.whiskeyId)?.name || '(삭제된 위스키)');
     const customBadge = isCustom ? '<span class="tag-custom">바/외부</span>' : '';
+
+    const noteSummary = [
+      t.nose   ? `향 · ${t.nose}`   : '',
+      t.palate ? `맛 · ${t.palate}` : '',
+      t.finish ? `피니시 · ${t.finish}` : '',
+    ].filter(Boolean).join('  ');
+
     const card = document.createElement('div');
     card.className = 'tasting-card';
     card.innerHTML = `
-      <div class="tasting-card-header">
-        <div>
-          <div class="tasting-whisky-name">${whiskyName}${customBadge}</div>
-          <div class="tasting-date">${formatDate(t.date)}</div>
-        </div>
-        <div class="tasting-header-right">
-          ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
-          <button class="btn-icon-sm" onclick="openEditTastingModal('${t.id}')">✏️</button>
-          <button class="btn-icon-sm" onclick="deleteTasting('${t.id}', false)">🗑️</button>
-        </div>
+      <div class="card-thumb">
+        <img class="tasting-card-img" id="tasting-thumb-${t.id}" alt="" />
+        <span class="card-thumb-ph">📝</span>
       </div>
-      <div class="tasting-card-body">
-        ${t.color ? `<div class="tasting-row"><span class="tasting-label">색깔</span><span class="tasting-value">${colorSwatch(t.color)}${t.color}</span></div>` : ''}
-        ${t.amount ? `<div class="tasting-row"><span class="tasting-label">시음량</span><span class="tasting-value">${t.amount}ml</span></div>` : ''}
-        ${t.nose ? `<div class="tasting-row"><span class="tasting-label">향</span><span class="tasting-value">${t.nose}</span></div>` : ''}
-        ${t.palate ? `<div class="tasting-row"><span class="tasting-label">맛</span><span class="tasting-value">${t.palate}</span></div>` : ''}
-        ${t.finish ? `<div class="tasting-row"><span class="tasting-label">피니시</span><span class="tasting-value">${t.finish}</span></div>` : ''}
-        ${(t.noseScore || t.palateScore || t.finishScore) ? `<div class="tasting-row"><span class="tasting-label">세부 점수</span><span class="tasting-value score-badges">${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}</span></div>` : ''}
-        ${t.notes ? `<div class="tasting-row"><span class="tasting-label">메모</span><span class="tasting-value">${t.notes}</span></div>` : ''}
+      <div class="tasting-card-content">
+        <div class="card-row-top">
+          <div>
+            <div class="tasting-whisky-name">${whiskyName}${customBadge}</div>
+            <div class="tasting-date">${formatDate(t.date)}${t.color ? ` · ${colorSwatch(t.color)}${t.color}` : ''}${t.amount ? ` · ${t.amount}ml` : ''}</div>
+          </div>
+          <div class="tasting-header-right">
+            ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
+            <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditTastingModal('${t.id}')">✏️</button>
+            <button class="btn-icon-sm" onclick="event.stopPropagation(); deleteTasting('${t.id}', false)">🗑️</button>
+          </div>
+        </div>
+        ${noteSummary ? `<div class="tasting-note-summary">${noteSummary}</div>` : ''}
+        ${(t.noseScore || t.palateScore || t.finishScore) ? `
+          <div class="tasting-score-row">
+            ${t.noseScore ? `<span class="score-mini-item">향 ${t.noseScore}</span>` : ''}
+            ${t.palateScore ? `<span class="score-mini-item">맛 ${t.palateScore}</span>` : ''}
+            ${t.finishScore ? `<span class="score-mini-item">피니시 ${t.finishScore}</span>` : ''}
+          </div>` : ''}
       </div>
     `;
     list.appendChild(card);
+
+    ImageDB.get('tasting_' + t.id).then(img => {
+      if (img) {
+        const thumb = document.getElementById(`tasting-thumb-${t.id}`);
+        if (thumb) {
+          thumb.src = img;
+          thumb.style.display = 'block';
+          const ph = thumb.nextElementSibling;
+          if (ph) ph.style.display = 'none';
+        }
+      }
+    });
   });
 }
 
@@ -1202,9 +1237,7 @@ const Crop = {
     img.onload = () => {
       ctx.drawImage(img, srcX, srcY, srcSz, srcSz, 0, 0, this.OUT, this.OUT);
       const result = canvas.toDataURL('image/jpeg', 0.85);
-      _pendingImageDataUrl = result;
-      _deleteImageOnSave = false;
-      _showImagePreview(result);
+      if (_cropCallback) { _cropCallback(result); _cropCallback = null; }
       closeModal('modal-crop');
     };
     img.src = this.src;

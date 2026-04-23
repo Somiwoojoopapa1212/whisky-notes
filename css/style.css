@@ -236,21 +236,42 @@ body {
   border-radius: 12px;
   border: 1px solid var(--border);
   overflow: hidden;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
   transition: box-shadow 0.2s;
 }
 .tasting-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.06); }
 
-.tasting-card-header {
+.tasting-card-content {
+  flex: 1;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  padding: 14px 20px 10px;
-  background: var(--secondary);
-  border-bottom: 1px solid var(--border);
+  flex-direction: column;
+  padding: 10px 12px 10px 10px;
+  min-width: 0;
+  gap: 4px;
 }
-.tasting-whisky-name { font-weight: 700; font-size: 15px; }
-.tasting-date { color: var(--text-muted); font-size: 12px; margin-top: 2px; }
-.tasting-header-right { display: flex; align-items: center; gap: 6px; }
+
+.tasting-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: none;
+}
+
+.tasting-whisky-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.tasting-date { color: var(--text-muted); font-size: 11px; margin-top: 2px; }
+.tasting-header-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+
+.tasting-note-summary {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tasting-score-row { display: flex; gap: 4px; flex-wrap: wrap; }
 
 .score-badge {
   background: var(--primary);
@@ -1052,7 +1073,7 @@ body {
   display: none;
 }
 
-/* ── 시음 노트 사진 ── */
+/* ── 시음 노트 모달 사진 업로드 영역 ── */
 .tasting-img-zone {
   width: 100%;
   height: 150px;
