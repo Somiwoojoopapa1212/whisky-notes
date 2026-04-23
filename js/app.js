@@ -217,7 +217,8 @@ function renderCollection() {
         if (thumb) {
           thumb.src = img;
           thumb.style.display = 'block';
-          thumb.previousElementSibling && (thumb.previousElementSibling.style.display = 'none');
+          const ph = thumb.nextElementSibling;
+          if (ph) ph.style.display = 'none';
         }
       }
     });
@@ -1006,7 +1007,9 @@ function onDistilleryInput(val) {
 
 async function fetchAcSuggestions(query) {
   try {
-    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(query)}&language=en&type=item&format=json&origin=*&limit=15`;
+    // "distillery" 접미어 추가로 증류소 결과 우선 검색
+    const searchQuery = query + ' distillery';
+    const url = `https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(searchQuery)}&language=en&type=item&format=json&origin=*&limit=15`;
     const res = await fetch(url);
     const data = await res.json();
 

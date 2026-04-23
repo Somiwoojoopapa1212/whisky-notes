@@ -128,15 +128,15 @@ body {
   overflow: hidden;
   display: flex;
   flex-direction: row;
-  align-items: stretch;
+  align-items: center;
   transition: box-shadow 0.2s, transform 0.2s;
-  min-height: 86px;
 }
 .whisky-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
 
-/* 왼쪽 썸네일 */
+/* 왼쪽 썸네일 - 고정 정사각형 */
 .card-thumb {
   width: 80px;
+  height: 80px;
   min-width: 80px;
   background: var(--secondary);
   display: flex;
@@ -144,7 +144,8 @@ body {
   justify-content: center;
   cursor: pointer;
   overflow: hidden;
-  border-right: 1px solid var(--border);
+  border-radius: 10px;
+  margin: 8px;
   flex-shrink: 0;
 }
 .card-thumb-ph { font-size: 26px; opacity: 0.22; pointer-events: none; }
@@ -1054,7 +1055,7 @@ body {
 /* ── 시음 노트 사진 ── */
 .tasting-img-zone {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 150px;
   border: 2px dashed var(--border);
   border-radius: 10px;
   display: flex;
@@ -1065,6 +1066,7 @@ body {
   overflow: hidden;
   position: relative;
   margin-bottom: 4px;
+  box-sizing: border-box;
 }
 .tasting-img-ph { text-align: center; color: var(--text-muted); pointer-events: none; }
 .tasting-img-ph span { display: block; font-size: 28px; margin-bottom: 4px; }
