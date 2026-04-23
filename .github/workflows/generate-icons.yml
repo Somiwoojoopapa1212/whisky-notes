@@ -1,0 +1,35 @@
+name: Generate PNG Icons
+
+on:
+  push:
+    paths:
+      - 'icons/icon.svg'
+    branches:
+      - main
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install sharp
+        run: npm install sharp
+
+      - name: Generate PNG icons
+        run: node generate-icons.js
+
+      - name: Commit generated icons
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add icons/icon-192.png icons/icon-512.png icons/icon-maskable-512.png icons/apple-touch-icon.png
+          git diff --staged --quiet || git commit -m "chore: auto-generate PNG icons from SVG [skip ci]"
+          git push
