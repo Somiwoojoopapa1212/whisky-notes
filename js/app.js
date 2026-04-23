@@ -891,21 +891,36 @@ function _parseVisionOCR(response) {
     || '';
   if (!fullText.trim()) return null;
 
-  const lines = fullText.split('\n')
-    .map(l => l.trim())
-    .filter(l => l.length > 1 && /[a-zA-Z가-힣]/.test(l))
-    .filter(l => !/^[\d\s%\.]+$/.test(l));
-
-  // ABV 추출
   const abvMatch = fullText.match(/(\d{2,3}(?:\.\d)?)\s*%(?:\s*(?:abv|vol|alc))?/i);
-  // 숙성연수 추출
   const ageMatch = fullText.match(/(\d+)\s*(?:year|yr|yo|y\.o\.)/i)
     || fullText.match(/(\d+)\s*년/);
 
-  const nameQuery = lines.slice(0, 3).join(' ').replace(/\s+/g, ' ').trim();
+  // 이름으로 쓸 수 없는 서술어 라인 패턴
+  const noisePattern = /^(single\s*malt|blended|scotch|irish|japanese|bourbon|whisky|whiskey|highland|speyside|islay|lowland|campbeltown|distillery|distilled|bottled|aged|matured|years?\s*old|established|est\.|product\s*of|imported|limited\s*edition|reserve|original|cask\s*strength|oak|sherry|batch|bottle\s*no|net\s*contents?|содержимое)$/i;
+
+  const cleanLines = fullText.split('\n')
+    .map(l => l.trim())
+    .filter(l => l.length >= 3)
+    .filter(l => /[a-zA-Z가-힣]/.test(l))          // 문자 포함
+    .filter(l => !/^\d+(\.\d+)?(%|ml|cl|л)?$/.test(l)) // 순수 숫자/용량 라인 제거
+    .filter(l => !noisePattern.test(l));
+
+  let nameQuery = cleanLines[0] || '';
+
+  // 다음 줄이 연산 숫자("12" / "12 Year")이면 붙임
+  if (ageMatch && cleanLines[1]) {
+    const next = cleanLines[1];
+    if (/^\d{1,2}(\s*(year|yr|yo))?$/i.test(next)) {
+      nameQuery += ' ' + ageMatch[1];
+    }
+  }
+
+  // 최대 4단어로 제한 (Wikidata 검색 최적화)
+  const words = nameQuery.split(/\s+/);
+  if (words.length > 4) nameQuery = words.slice(0, 4).join(' ');
 
   return {
-    nameQuery,
+    nameQuery: nameQuery.trim(),
     abv: abvMatch ? abvMatch[1] : null,
     age: ageMatch ? ageMatch[1] : null,
   };
