@@ -905,17 +905,10 @@ function _parseVisionOCR(response) {
     .filter(l => !/^\d+(\.\d+)?(%|ml|cl|л)?$/.test(l)) // 순수 숫자/용량 라인 제거
     .filter(l => !noisePattern.test(l));
 
-  let nameQuery = cleanLines[0] || '';
+  // 첫 2줄 합침 (브랜드명이 라벨에서 두 줄에 걸쳐 있는 경우 대응)
+  let nameQuery = cleanLines.slice(0, 2).join(' ').trim();
 
-  // 다음 줄이 연산 숫자("12" / "12 Year")이면 붙임
-  if (ageMatch && cleanLines[1]) {
-    const next = cleanLines[1];
-    if (/^\d{1,2}(\s*(year|yr|yo))?$/i.test(next)) {
-      nameQuery += ' ' + ageMatch[1];
-    }
-  }
-
-  // 최대 4단어로 제한 (Wikidata 검색 최적화)
+  // 최대 4단어로 제한
   const words = nameQuery.split(/\s+/);
   if (words.length > 4) nameQuery = words.slice(0, 4).join(' ');
 
@@ -936,12 +929,10 @@ async function _applyLabelResult(parsed) {
   if (parsed.abv && !getVal('whisky-abv'))   setVal('whisky-abv', parsed.abv);
   if (parsed.age && !getVal('whisky-age'))   setVal('whisky-age', parsed.age);
 
-  // 이름 필드에 OCR 결과를 넣고 Wikidata 자동완성 트리거
   const input = document.getElementById('whisky-name');
   if (input) input.value = parsed.nameQuery;
-  await fetchAcSuggestions(parsed.nameQuery);
 
-  showToast('라벨 인식 완료! 아래 목록에서 선택해주세요 👆');
+  showToast('라벨 인식 완료! 이름을 확인 후 필요시 수정해주세요.');
 }
 
 // ── 위스키 이름 자동완성 (Wikidata) ──
