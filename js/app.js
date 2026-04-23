@@ -451,6 +451,7 @@ function renderPage(page) {
   if (page === 'collection') renderCollection();
   else if (page === 'tasting') renderTastingPage();
   else if (page === 'stats') renderStats();
+  else if (page === 'wishlist') renderWishlist();
 }
 
 // ══════════════════════════════
@@ -1897,6 +1898,131 @@ function setSliderVal(sliderId, valId, val) {
     el.classList.add('score-unset');
     document.getElementById(valId).textContent = '—';
   }
+}
+
+// ══════════════════════════════
+// ── 위시리스트 ──
+// ══════════════════════════════
+let editingWishlistId = null;
+
+const PRIORITY_LABEL = { high: '꼭 마셔봐야 함', medium: '원함', low: '보통' };
+const PRIORITY_CLASS = { high: 'priority-high', medium: 'priority-medium', low: 'priority-low' };
+
+function renderWishlist() {
+  const list = Storage.getWishlist().sort((a, b) => {
+    const order = { high: 0, medium: 1, low: 2 };
+    return (order[a.priority] ?? 2) - (order[b.priority] ?? 2) || (b.addedAt || '').localeCompare(a.addedAt || '');
+  });
+
+  const pending = list.filter(w => !w.purchased);
+  const bought  = list.filter(w => w.purchased);
+
+  document.getElementById('wishlist-subtitle').textContent =
+    `총 ${list.length}개  ·  미구매 ${pending.length}  ·  구매완료 ${bought.length}`;
+
+  const grid  = document.getElementById('wishlist-grid');
+  const empty = document.getElementById('wishlist-empty');
+  grid.innerHTML = '';
+
+  if (list.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+
+  const renderItem = item => {
+    const div = document.createElement('div');
+    div.className = `wishlist-card${item.purchased ? ' wl-purchased' : ''}`;
+    div.innerHTML = `
+      <div class="wl-priority-bar ${PRIORITY_CLASS[item.priority || 'low']}"></div>
+      <div class="wl-body">
+        <div class="wl-name">${item.name}${item.purchased ? ' <span class="wl-done-badge">구매완료</span>' : ''}</div>
+        ${item.distillery || item.region ? `<div class="wl-meta">${[item.distillery, item.region].filter(Boolean).join(' · ')}</div>` : ''}
+        <div class="wl-tags">
+          <span class="tag ${PRIORITY_CLASS[item.priority || 'low']}-tag">${PRIORITY_LABEL[item.priority || 'low']}</span>
+          ${item.type ? `<span class="tag">${item.type}</span>` : ''}
+          ${item.targetPrice ? `<span class="wl-price">₩${parseInt(item.targetPrice).toLocaleString()}</span>` : ''}
+        </div>
+        ${item.notes ? `<div class="wl-notes">${item.notes}</div>` : ''}
+        <div class="wl-actions">
+          ${!item.purchased ? `<button class="btn btn-sm btn-primary" onclick="markWishlistAsPurchased('${item.id}')">✓ 구매완료</button>` : ''}
+          <button class="btn btn-sm btn-outline" onclick="openEditWishlistModal('${item.id}')">수정</button>
+          <button class="btn btn-sm btn-outline btn-danger-outline" onclick="deleteWishlistItem('${item.id}')">삭제</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(div);
+  };
+
+  pending.forEach(renderItem);
+  if (bought.length > 0) {
+    const sep = document.createElement('div');
+    sep.className = 'wl-section-label';
+    sep.textContent = '구매 완료';
+    grid.appendChild(sep);
+    bought.forEach(renderItem);
+  }
+}
+
+function openAddWishlistModal() {
+  editingWishlistId = null;
+  document.getElementById('modal-wishlist-title').textContent = '위시리스트 추가';
+  clearWishlistForm();
+  openModal('modal-wishlist');
+}
+
+function openEditWishlistModal(id) {
+  editingWishlistId = id;
+  document.getElementById('modal-wishlist-title').textContent = '위시리스트 수정';
+  const item = Storage.getWishlist().find(w => w.id === id);
+  if (!item) return;
+  setVal('wl-name', item.name);
+  setVal('wl-distillery', item.distillery);
+  setVal('wl-region', item.region);
+  setVal('wl-type', item.type);
+  setVal('wl-priority', item.priority || 'medium');
+  setVal('wl-target-price', item.targetPrice);
+  setVal('wl-notes', item.notes);
+  openModal('modal-wishlist');
+}
+
+function clearWishlistForm() {
+  ['wl-name','wl-distillery','wl-region','wl-type','wl-target-price','wl-notes'].forEach(id => setVal(id, ''));
+  setVal('wl-priority', 'medium');
+}
+
+function saveWishlistItem() {
+  const name = getVal('wl-name').trim();
+  if (!name) { alert('위스키 이름을 입력하세요.'); return; }
+  const data = {
+    name,
+    distillery: getVal('wl-distillery').trim(),
+    region: getVal('wl-region'),
+    type: getVal('wl-type'),
+    priority: getVal('wl-priority') || 'medium',
+    targetPrice: getVal('wl-target-price'),
+    notes: getVal('wl-notes').trim(),
+  };
+  if (editingWishlistId) {
+    Storage.updateWishlistItem(editingWishlistId, data);
+  } else {
+    Storage.addWishlistItem(data);
+  }
+  closeModal('modal-wishlist');
+  renderWishlist();
+  showToast(editingWishlistId ? '위시리스트가 수정됐습니다 ✓' : '위시리스트에 추가됐습니다 🔖');
+}
+
+function deleteWishlistItem(id) {
+  const item = Storage.getWishlist().find(w => w.id === id);
+  if (!confirm(`"${item?.name}"을(를) 위시리스트에서 삭제할까요?`)) return;
+  Storage.deleteWishlistItem(id);
+  renderWishlist();
+}
+
+function markWishlistAsPurchased(id) {
+  const item = Storage.getWishlist().find(w => w.id === id);
+  if (!confirm(`"${item?.name}" 구매를 완료 처리할까요?`)) return;
+  Storage.updateWishlistItem(id, { purchased: true, purchasedAt: new Date().toISOString() });
+  renderWishlist();
+  showToast('구매 완료로 처리됐습니다 🎉');
 }
 
 // ── 데이터 초기화 ──

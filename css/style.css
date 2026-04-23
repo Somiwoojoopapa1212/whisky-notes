@@ -1590,6 +1590,106 @@ body {
   .taste-report-info { width: 100%; }
 }
 
+/* ── 위시리스트 ── */
+.wishlist-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 12px;
+}
+
+.wishlist-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+.wishlist-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
+.wishlist-card.wl-purchased { opacity: 0.6; }
+
+.wl-priority-bar {
+  width: 5px;
+  flex-shrink: 0;
+}
+.priority-high  { background: #ef4444; }
+.priority-medium { background: #c17f24; }
+.priority-low   { background: #3b82f6; }
+
+.priority-high-tag  { background: #fee2e2; color: #b91c1c; }
+.priority-medium-tag { background: var(--primary-light); color: var(--primary-dark); }
+.priority-low-tag   { background: #dbeafe; color: #1d4ed8; }
+
+.wl-body {
+  flex: 1;
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-width: 0;
+}
+.wl-name {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.3;
+}
+.wl-done-badge {
+  font-size: 11px;
+  font-weight: 600;
+  background: #f1f5f9;
+  color: #64748b;
+  padding: 1px 7px;
+  border-radius: 20px;
+  margin-left: 5px;
+  vertical-align: middle;
+}
+.wl-meta {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.wl-tags {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+}
+.wl-price {
+  font-weight: 600;
+  color: var(--primary-dark);
+  font-size: 12px;
+  margin-left: auto;
+}
+.wl-notes {
+  font-size: 12px;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.wl-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+.btn-danger-outline {
+  color: var(--danger);
+  border-color: rgba(239,68,68,0.35);
+}
+.btn-danger-outline:hover {
+  background: rgba(239,68,68,0.07);
+}
+.wl-section-label {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 8px 2px 2px;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
 /* ── 공유 카드 버튼 ── */
 .btn-share {
   background: none;

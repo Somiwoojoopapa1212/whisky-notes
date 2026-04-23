@@ -49,6 +49,25 @@ const Storage = {
   deleteTasting(id) {
     this.saveTastings(this.getTastings().filter(t => t.id !== id));
   },
+
+  // ── 위시리스트 ──
+  getWishlist() { return JSON.parse(localStorage.getItem('wishlist') || '[]'); },
+  saveWishlist(list) { localStorage.setItem('wishlist', JSON.stringify(list)); },
+  addWishlistItem(data) {
+    const list = this.getWishlist();
+    const item = { ...data, id: Date.now().toString(), addedAt: new Date().toISOString() };
+    list.push(item);
+    this.saveWishlist(list);
+    return item;
+  },
+  updateWishlistItem(id, data) {
+    const list = this.getWishlist();
+    const idx = list.findIndex(w => w.id === id);
+    if (idx !== -1) { list[idx] = { ...list[idx], ...data }; this.saveWishlist(list); }
+  },
+  deleteWishlistItem(id) {
+    this.saveWishlist(this.getWishlist().filter(w => w.id !== id));
+  },
 };
 
 const ImageDB = {

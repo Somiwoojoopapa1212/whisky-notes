@@ -705,11 +705,102 @@
 </div>
 
 <!-- ════════════════════════════
-     7. 커뮤니티 통계
+     7. 취향 분석 리포트
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <span class="section-emoji">🎯</span>
+    <div class="section-title">취향 분석 리포트</div>
+  </div>
+
+  <p><span class="pill">통계</span> 탭 하단에서 <strong>나의 취향 분석 리포트</strong>를 확인할 수 있습니다. 시음 노트에 향미 프로필을 입력할수록 리포트가 정확해집니다.</p>
+
+  <h3>리포트 구성</h3>
+  <table>
+    <thead><tr><th>구성 요소</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>레이더 차트</td><td>과일 · 달콤 · 스파이시 · 오크 · 스모키 · 곡물 6축 평균 시각화</td></tr>
+      <tr><td>향미 바 차트</td><td>순위별 (🥇🥈🥉) 향미 점수 막대 표시</td></tr>
+      <tr><td>취향 설명</td><td>데이터 기반 한 줄 취향 요약 텍스트</td></tr>
+      <tr><td>스타일 추천</td><td>상위 향미에 맞는 위스키 스타일 · 추천 브랜드</td></tr>
+    </tbody>
+  </table>
+
+  <h3>취향 유형</h3>
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li><strong>균형 잡힌 취향</strong> — 최고-최저 점수 차이가 0.8 미만으로 모든 향미를 고루 즐김</li>
+    <li><strong>복합적 취향</strong> — 상위 1·2위 향미 점수가 근접(85% 이상)하여 두 향미를 동시에 선호</li>
+    <li><strong>뚜렷한 취향</strong> — 특정 향미가 압도적으로 높아 명확한 선호 스타일이 있음</li>
+  </ul>
+
+  <h3>스타일 추천 매핑</h3>
+  <table>
+    <thead><tr><th>상위 향미</th><th>추천 스타일</th><th>추천 예시</th></tr></thead>
+    <tbody>
+      <tr><td>🔥 스모키</td><td>아일라 싱글몰트</td><td>Ardbeg · Laphroaig · Lagavulin</td></tr>
+      <tr><td>🌳 오크</td><td>셰리 캐스크 싱글몰트</td><td>GlenAllachie · Glenfarclas · Macallan</td></tr>
+      <tr><td>🍯 달콤</td><td>버번 캐스크 숙성 몰트</td><td>Balvenie · Glenmorangie · Buffalo Trace</td></tr>
+      <tr><td>🍎 과일</td><td>스페이사이드 싱글몰트</td><td>Glenfarclas · Craigellachie · BenRiach</td></tr>
+      <tr><td>🌶️ 스파이시</td><td>하이랜드 / 라이 위스키</td><td>Dalmore · Highland Park · Rittenhouse Rye</td></tr>
+      <tr><td>🌾 곡물</td><td>블렌디드 / 그레인 위스키</td><td>Johnnie Walker Blue · Nikka From The Barrel</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note-box">
+    <strong>💡 정확도 향상 팁:</strong> 시음 노트 작성 시 <span class="pill">향미 프로필</span> 슬라이더를 꼭 입력해 주세요. 향미 데이터가 있는 기록이 많을수록 리포트가 정확해집니다.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     8. 위시리스트
 ════════════════════════════ -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">7</div>
+    <div class="section-num">8</div>
+    <span class="section-emoji">🔖</span>
+    <div class="section-title">위시리스트</div>
+  </div>
+
+  <p>마셔보고 싶은 위스키를 <strong>위시리스트</strong>에 미리 저장해두고 관리할 수 있습니다. 하단 네비게이션 <span class="pill">🔖 위시리스트</span> 탭에서 접근합니다.</p>
+
+  <h3>위시리스트 항목 정보</h3>
+  <table>
+    <thead><tr><th>항목</th><th>설명</th></tr></thead>
+    <tbody>
+      <tr><td>위스키 이름 *</td><td>필수 입력</td></tr>
+      <tr><td>증류소</td><td>선택 입력</td></tr>
+      <tr><td>지역 / 종류</td><td>스페이사이드 · 하이랜드 등 지역 및 싱글몰트 등 종류</td></tr>
+      <tr><td>우선순위</td><td>꼭 마셔봐야 함(🔴) / 원함(🟡) / 보통(🔵)</td></tr>
+      <tr><td>목표 가격</td><td>구매 예산 (원)</td></tr>
+      <tr><td>메모</td><td>구매처, 추가 정보 등 자유 입력</td></tr>
+    </tbody>
+  </table>
+
+  <h3>우선순위 색상 코드</h3>
+  <table>
+    <thead><tr><th>우선순위</th><th>카드 왼쪽 색상</th><th>용도</th></tr></thead>
+    <tbody>
+      <tr><td>🔴 꼭 마셔봐야 함</td><td>빨강</td><td>반드시 구매하고 싶은 최우선 위스키</td></tr>
+      <tr><td>🟡 원함</td><td>앰버</td><td>기회가 되면 구매하고 싶은 위스키</td></tr>
+      <tr><td>🔵 보통</td><td>파랑</td><td>관심 목록 수준의 위스키</td></tr>
+    </tbody>
+  </table>
+
+  <h3>구매 완료 처리</h3>
+  <p>카드의 <span class="pill">✓ 구매완료</span> 버튼을 탭하면 해당 항목이 <strong>구매 완료</strong> 상태로 변경됩니다. 구매 완료 항목은 목록 하단에 별도로 표시됩니다.</p>
+
+  <div class="note-box">
+    <strong>💡 활용 팁:</strong> 마트 · 면세점 · 바에서 발견한 위스키를 그 자리에서 바로 위시리스트에 추가해두면 나중에 구매 결정에 도움이 됩니다.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     9. 커뮤니티 통계
+════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">9</div>
     <span class="section-emoji">🌐</span>
     <div class="section-title">커뮤니티 통계</div>
   </div>
@@ -729,11 +820,11 @@
 </div>
 
 <!-- ════════════════════════════
-     8. Google Cloud Vision API
+     10. Google Cloud Vision API
 ════════════════════════════ -->
 <div class="section page-break">
   <div class="section-header">
-    <div class="section-num">8</div>
+    <div class="section-num">10</div>
     <span class="section-emoji">🔑</span>
     <div class="section-title">Google Cloud Vision API 설정</div>
   </div>
@@ -796,7 +887,7 @@
 ════════════════════════════ -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">9</div>
+    <div class="section-num">11</div>
     <span class="section-emoji">💾</span>
     <div class="section-title">데이터 관리 및 초기화</div>
   </div>
@@ -824,7 +915,7 @@
 ════════════════════════════ -->
 <div class="section page-break">
   <div class="section-header">
-    <div class="section-num">10</div>
+    <div class="section-num">12</div>
     <span class="section-emoji">❓</span>
     <div class="section-title">자주 묻는 질문 (FAQ)</div>
   </div>
