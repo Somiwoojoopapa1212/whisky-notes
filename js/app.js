@@ -43,6 +43,271 @@ let _cropCallback = null;
 const STATUS_LABEL = { unopened: '미개봉', opened: '개봉중', finished: '완음' };
 const STATUS_CLASS = { unopened: 'status-unopened', opened: 'status-opened', finished: 'status-finished' };
 
+const FLAVORS = [
+  { key: 'fruity', label: '과일',    emoji: '🍎' },
+  { key: 'sweet',  label: '달콤',    emoji: '🍯' },
+  { key: 'spicy',  label: '스파이시', emoji: '🌶️' },
+  { key: 'oaky',   label: '오크',    emoji: '🌳' },
+  { key: 'smoky',  label: '스모키',   emoji: '🔥' },
+  { key: 'grainy', label: '곡물',    emoji: '🌾' },
+];
+
+// ── 레이더 차트 ──
+function drawRadarChart(canvas, data, opts = {}) {
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const pad = opts.padding || 32;
+  const r = Math.min(cx, cy) - pad;
+  const n = FLAVORS.length;
+  const maxVal = 5;
+  const vals = FLAVORS.map(f => data?.[f.key] || 0);
+  const ang = i => (Math.PI * 2 * i) / n - Math.PI / 2;
+  const pt  = (i, radius) => ({ x: cx + radius * Math.cos(ang(i)), y: cy + radius * Math.sin(ang(i)) });
+
+  ctx.clearRect(0, 0, W, H);
+  if (opts.bgColor) { ctx.fillStyle = opts.bgColor; ctx.fillRect(0, 0, W, H); }
+
+  // 배경 링
+  for (let ring = 1; ring <= maxVal; ring++) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const p = pt(i, r * ring / maxVal);
+      i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.strokeStyle = ring === maxVal ? 'rgba(193,127,36,0.35)' : 'rgba(193,127,36,0.15)';
+    ctx.lineWidth = ring === maxVal ? 1.5 : 0.8;
+    ctx.stroke();
+  }
+  // 축선
+  for (let i = 0; i < n; i++) {
+    const p = pt(i, r);
+    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(p.x, p.y);
+    ctx.strokeStyle = 'rgba(193,127,36,0.15)'; ctx.lineWidth = 0.8; ctx.stroke();
+  }
+  // 데이터 폴리곤
+  if (vals.some(v => v > 0)) {
+    ctx.beginPath();
+    for (let i = 0; i < n; i++) {
+      const p = pt(i, r * vals[i] / maxVal);
+      i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y);
+    }
+    ctx.closePath();
+    ctx.fillStyle   = opts.fillColor  || 'rgba(193,127,36,0.2)';
+    ctx.fill();
+    ctx.strokeStyle = opts.lineColor  || 'rgba(193,127,36,0.85)';
+    ctx.lineWidth   = opts.lineWidth  || 2;
+    ctx.stroke();
+    for (let i = 0; i < n; i++) {
+      if (vals[i] > 0) {
+        const p = pt(i, r * vals[i] / maxVal);
+        ctx.beginPath(); ctx.arc(p.x, p.y, opts.dotRadius || 3, 0, Math.PI * 2);
+        ctx.fillStyle = opts.dotColor || '#c17f24'; ctx.fill();
+      }
+    }
+  }
+  // 레이블
+  if (opts.showLabels !== false) {
+    const lpad = opts.labelPad || 20;
+    ctx.font = `${opts.fontSize || 11}px -apple-system,sans-serif`;
+    ctx.fillStyle = opts.labelColor || '#7a6a5a';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (let i = 0; i < n; i++) {
+      const p = pt(i, r + lpad);
+      ctx.fillText(FLAVORS[i].label, p.x, p.y);
+    }
+  }
+}
+
+function getFlavorData() {
+  const d = {};
+  FLAVORS.forEach(f => { const el = document.getElementById('fl-' + f.key); d[f.key] = el ? +el.value : 0; });
+  return d;
+}
+function setFlavorData(data) {
+  FLAVORS.forEach(f => {
+    const el = document.getElementById('fl-' + f.key);
+    const ve = document.getElementById('fv-' + f.key);
+    const v = data?.[f.key] || 0;
+    if (el) el.value = v;
+    if (ve) ve.textContent = v;
+  });
+  updateFlavorPreview();
+}
+function updateFlavorPreview() {
+  FLAVORS.forEach(f => {
+    const el = document.getElementById('fl-' + f.key);
+    const ve = document.getElementById('fv-' + f.key);
+    if (el && ve) ve.textContent = el.value;
+  });
+  const c = document.getElementById('flavor-preview-canvas');
+  if (c) drawRadarChart(c, getFlavorData(), { padding: 30, fontSize: 11, labelPad: 18 });
+}
+
+// ── 공유 카드 생성 ──
+function _roundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y); ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+function _wrapText(ctx, text, maxW, maxLines = 2) {
+  const words = text.split(' ');
+  const lines = [];
+  let line = '';
+  for (const w of words) {
+    const test = line ? line + ' ' + w : w;
+    if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; }
+    else line = test;
+  }
+  if (line) lines.push(line);
+  return lines.slice(0, maxLines);
+}
+
+async function generateShareCard(tastingId) {
+  showToast('카드 생성 중...');
+  const t = Storage.getTastings().find(t => t.id === tastingId);
+  if (!t) return;
+  const w = t.whiskeyId ? Storage.getWhisky(t.whiskeyId) : null;
+  const name = w?.name || t.customWhiskeyName || '위스키';
+  const sub  = [w?.distillery || '', w?.region || t.region || ''].filter(Boolean).join(' · ');
+
+  const photo = await ImageDB.get('tasting_' + tastingId);
+
+  const S = 1080;
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = S;
+  const ctx = canvas.getContext('2d');
+
+  // 배경
+  const bg = ctx.createLinearGradient(0, S, S, 0);
+  bg.addColorStop(0, '#0f0500'); bg.addColorStop(0.5, '#1e0c00'); bg.addColorStop(1, '#2a1400');
+  ctx.fillStyle = bg; ctx.fillRect(0, 0, S, S);
+
+  // 앰버 글로우
+  ['rgba(193,127,36,0.07)','rgba(193,127,36,0.05)'].forEach((c, i) => {
+    const g = ctx.createRadialGradient(S * 0.4, S * 0.4, 0, S * 0.4, S * 0.4, S * (0.5 + i * 0.2));
+    g.addColorStop(0, c); g.addColorStop(1, 'transparent');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
+  });
+
+  // 상단 구분선
+  ctx.fillStyle = '#c17f24'; ctx.fillRect(60, 58, S - 120, 2);
+
+  // 앱 이름
+  ctx.font = 'bold 30px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(193,127,36,0.55)';
+  ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  ctx.fillText('위스키 노트', 60, 74);
+
+  // 날짜
+  ctx.font = '28px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(193,127,36,0.45)';
+  ctx.textAlign = 'right';
+  ctx.fillText(t.date || '', S - 60, 74);
+
+  let y = 130;
+
+  // 사진 (있으면 오른쪽 상단)
+  const PH = 300;
+  if (photo) {
+    await new Promise(res => {
+      const img = new Image(); img.onload = () => {
+        ctx.save();
+        _roundRect(ctx, S - 60 - PH, y, PH, PH, 18);
+        ctx.clip(); ctx.drawImage(img, S - 60 - PH, y, PH, PH); ctx.restore();
+        // 테두리
+        _roundRect(ctx, S - 60 - PH, y, PH, PH, 18);
+        ctx.strokeStyle = 'rgba(193,127,36,0.4)'; ctx.lineWidth = 2; ctx.stroke();
+        res();
+      }; img.src = photo;
+    });
+  }
+
+  // 위스키 이름
+  const nameMaxW = photo ? S - 180 - PH : S - 120;
+  ctx.font = 'bold 72px -apple-system,sans-serif';
+  ctx.fillStyle = '#f5c842'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
+  const nameLines = _wrapText(ctx, name, nameMaxW);
+  nameLines.forEach((line, i) => ctx.fillText(line, 60, y + i * 86));
+  y += nameLines.length * 86 + 12;
+
+  // 증류소/지역
+  if (sub) {
+    ctx.font = '36px -apple-system,sans-serif';
+    ctx.fillStyle = 'rgba(245,200,66,0.5)';
+    ctx.fillText(sub, 60, y); y += 52;
+  }
+
+  // 점수
+  if (t.score) {
+    ctx.font = 'bold 40px -apple-system,sans-serif';
+    ctx.fillStyle = '#c17f24';
+    ctx.fillText(`★ ${t.score}점`, 60, y); y += 58;
+  }
+
+  y = Math.max(y, photo ? 130 + PH + 30 : y) + 20;
+
+  // 구분선
+  ctx.strokeStyle = 'rgba(193,127,36,0.22)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(S - 60, y); ctx.stroke();
+  y += 30;
+
+  // 향미 휠
+  const hasFl = t.flavors && Object.values(t.flavors).some(v => v > 0);
+  if (hasFl) {
+    const WH = 380;
+    const wc = document.createElement('canvas');
+    wc.width = wc.height = WH;
+    drawRadarChart(wc, t.flavors, {
+      padding: 65, fontSize: 24, labelPad: 32,
+      lineWidth: 3, dotRadius: 6,
+      fillColor: 'rgba(193,127,36,0.22)',
+      lineColor: 'rgba(193,127,36,0.9)',
+      labelColor: 'rgba(245,210,100,0.85)',
+    });
+    ctx.drawImage(wc, (S - WH) / 2, y); y += WH + 24;
+  }
+
+  // 구분선
+  ctx.strokeStyle = 'rgba(193,127,36,0.22)'; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(S - 60, y); ctx.stroke();
+  y += 28;
+
+  // 시음 노트
+  const noteRows = [
+    t.nose   ? ['향',    t.nose]   : null,
+    t.palate ? ['맛',    t.palate] : null,
+    t.finish ? ['피니시', t.finish] : null,
+  ].filter(Boolean);
+  for (const [label, text] of noteRows) {
+    ctx.font = 'bold 28px -apple-system,sans-serif'; ctx.fillStyle = '#c17f24';
+    ctx.textAlign = 'left'; ctx.fillText(label, 60, y);
+    ctx.font = '28px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,225,170,0.85)';
+    const trunc = text.length > 48 ? text.slice(0, 48) + '…' : text;
+    ctx.fillText(trunc, 60 + 90, y); y += 46;
+  }
+
+  // 하단
+  ctx.fillStyle = '#c17f24'; ctx.fillRect(60, S - 64, S - 120, 2);
+  ctx.font = '24px -apple-system,sans-serif';
+  ctx.fillStyle = 'rgba(193,127,36,0.38)';
+  ctx.textAlign = 'center';
+  ctx.fillText('위스키 노트 앱으로 기록했습니다', S / 2, S - 44);
+
+  canvas.toBlob(blob => {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${name}-시음노트.png`;
+    a.click();
+  }, 'image/png');
+  showToast('공유 카드가 저장되었습니다 📤');
+}
+
 const COLOR_HEX = {
   '페일 골든': '#f5e49a',
   '골든': '#e8b830',
@@ -466,10 +731,12 @@ async function openDetailModal(id) {
             ${t.color ? `<span class="detail-tasting-meta">${colorSwatch(t.color)}${t.color}</span>` : ''}
             ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
             <div style="margin-left:auto;display:flex;gap:4px;">
+              <button class="btn-share" title="공유 카드" onclick="generateShareCard('${t.id}')">📤</button>
               <button class="btn-icon-sm" onclick="openEditTastingModal('${t.id}')">✏️</button>
               <button class="btn-icon-sm" onclick="deleteTasting('${t.id}', true)">🗑️</button>
             </div>
           </div>
+          ${(t.flavors && Object.values(t.flavors).some(v => v > 0)) ? `<div class="detail-radar-wrap"><canvas class="detail-radar" id="dr-${t.id}" width="200" height="200"></canvas></div>` : ''}
           ${t.nose ? `<div class="detail-tasting-row"><span class="tasting-label">향</span><span>${t.nose}</span></div>` : ''}
           ${t.palate ? `<div class="detail-tasting-row"><span class="tasting-label">맛</span><span>${t.palate}</span></div>` : ''}
           ${t.finish ? `<div class="detail-tasting-row"><span class="tasting-label">피니시</span><span>${t.finish}</span></div>` : ''}
@@ -479,6 +746,14 @@ async function openDetailModal(id) {
     }
   `;
   openModal('modal-detail');
+
+  // 레이더 차트 렌더링 (innerHTML 설정 후)
+  tastings.forEach(t => {
+    if (t.flavors && Object.values(t.flavors).some(v => v > 0)) {
+      const c = document.getElementById(`dr-${t.id}`);
+      if (c) drawRadarChart(c, t.flavors, { padding: 38, fontSize: 13, labelPad: 22, lineWidth: 2, dotRadius: 4 });
+    }
+  });
 }
 
 function colorSwatch(colorName) {
@@ -549,6 +824,7 @@ function renderTastingList() {
           </div>
           <div class="tasting-header-right">
             ${t.score ? `<span class="score-badge">종합 ${t.score}점</span>` : ''}
+            <button class="btn-share" title="공유 카드 만들기" onclick="event.stopPropagation(); generateShareCard('${t.id}')">📤</button>
             <button class="btn-icon-sm" onclick="event.stopPropagation(); openEditTastingModal('${t.id}')">✏️</button>
             <button class="btn-icon-sm" onclick="event.stopPropagation(); deleteTasting('${t.id}', false)">🗑️</button>
           </div>
@@ -620,6 +896,7 @@ function openEditTastingModal(id) {
   setSliderVal('tasting-finish-score', 'val-finish-score', t.finishScore);
   setSliderVal('tasting-score', 'val-total-score', t.score);
   setVal('tasting-notes', t.notes);
+  setFlavorData(t.flavors || null);
   showAutoFillHint(false);
   clearTastingImageUI();
   ImageDB.get('tasting_' + id).then(img => { if (img) _showTastingImagePreview(img); });
@@ -651,6 +928,7 @@ function clearTastingForm() {
   resetSlider('tasting-palate-score', 'val-palate-score');
   resetSlider('tasting-finish-score', 'val-finish-score');
   resetSlider('tasting-score', 'val-total-score');
+  setFlavorData(null);
 }
 
 async function saveTasting() {
@@ -681,6 +959,7 @@ async function saveTasting() {
     finishScore: getSliderVal('tasting-finish-score'),
     score: getSliderVal('tasting-score'),
     notes: getVal('tasting-notes').trim(),
+    flavors: getFlavorData(),
   };
 
   let savedId;
