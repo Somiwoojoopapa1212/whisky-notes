@@ -1,0 +1,879 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>위스키 노트 사용설명서</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap');
+
+  :root {
+    --amber: #c17f24;
+    --amber-light: #f5c842;
+    --amber-dim: rgba(193,127,36,0.15);
+    --dark: #1a0a00;
+    --text: #2d1f0e;
+    --text-muted: #7a6a5a;
+    --bg: #fdf8f2;
+    --bg-card: #fff;
+    --border: #e8d5b5;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans KR', -apple-system, sans-serif;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text);
+    background: var(--bg);
+  }
+
+  /* ── 인쇄 CSS ── */
+  @media print {
+    body { font-size: 13px; background: white; }
+    .no-print { display: none !important; }
+    .page-break { page-break-before: always; }
+    .cover { min-height: 100vh; }
+    h2 { page-break-after: avoid; }
+    .step-box, .note-box, .warn-box { break-inside: avoid; }
+  }
+
+  /* ── 표지 ── */
+  .cover {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #0f0500 0%, #1e0c00 50%, #2a1400 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    text-align: center;
+    padding: 60px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    width: 500px; height: 500px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(193,127,36,0.12) 0%, transparent 70%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .cover-icon { font-size: 90px; margin-bottom: 24px; }
+  .cover-title {
+    font-size: 48px;
+    font-weight: 900;
+    color: #f5c842;
+    letter-spacing: -1px;
+    margin-bottom: 8px;
+  }
+  .cover-sub {
+    font-size: 20px;
+    color: rgba(245,200,66,0.6);
+    margin-bottom: 48px;
+  }
+  .cover-line {
+    width: 200px; height: 2px;
+    background: linear-gradient(to right, transparent, #c17f24, transparent);
+    margin: 0 auto 48px;
+  }
+  .cover-meta { font-size: 15px; color: rgba(255,255,255,0.35); }
+  .cover-version { font-size: 18px; color: rgba(193,127,36,0.55); margin-top: 8px; }
+
+  /* ── 목차 ── */
+  .toc {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .toc h2 { font-size: 26px; color: var(--amber); margin-bottom: 32px; padding-bottom: 12px; border-bottom: 2px solid var(--amber-dim); }
+  .toc-list { list-style: none; }
+  .toc-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    padding: 10px 0;
+    border-bottom: 1px dotted var(--border);
+    font-size: 15px;
+  }
+  .toc-num {
+    font-weight: 700;
+    color: var(--amber);
+    min-width: 28px;
+    font-size: 13px;
+  }
+  .toc-label { flex: 1; }
+  .toc-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-left: 36px;
+    padding: 2px 0;
+  }
+
+  /* ── 본문 공통 ── */
+  .section {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 60px 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 32px;
+    padding-bottom: 14px;
+    border-bottom: 2px solid var(--amber-dim);
+  }
+  .section-num {
+    background: var(--amber);
+    color: white;
+    font-weight: 700;
+    font-size: 14px;
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .section-title { font-size: 24px; font-weight: 700; color: var(--dark); }
+  .section-emoji { font-size: 28px; }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--dark);
+    margin: 28px 0 12px;
+  }
+  p { margin-bottom: 12px; color: var(--text); }
+
+  /* ── 단계 박스 ── */
+  .step-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 16px 0;
+    position: relative;
+  }
+  .step-box::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 16px; bottom: 16px;
+    width: 3px;
+    background: var(--amber);
+    border-radius: 0 3px 3px 0;
+  }
+
+  /* ── 단계 목록 ── */
+  .steps { list-style: none; counter-reset: step; }
+  .steps li {
+    counter-increment: step;
+    display: flex;
+    gap: 14px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--bg);
+  }
+  .steps li::before {
+    content: counter(step);
+    background: var(--amber-dim);
+    color: var(--amber);
+    font-weight: 700;
+    font-size: 13px;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── 노트 박스 ── */
+  .note-box {
+    background: #fff8e8;
+    border: 1px solid #f0d080;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .note-box strong { color: var(--amber); }
+
+  .warn-box {
+    background: #fff3f0;
+    border: 1px solid #f0b0a0;
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .warn-box strong { color: #c0401a; }
+
+  /* ── 기능 카드 그리드 ── */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+  }
+  .feature-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .feature-card-icon { font-size: 28px; margin-bottom: 8px; }
+  .feature-card-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; color: var(--dark); }
+  .feature-card-desc { font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+
+  /* ── OS 뱃지 ── */
+  .os-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-right: 6px;
+  }
+  .os-android { background: #e8f5e9; color: #2e7d32; }
+  .os-ios { background: #e3f2fd; color: #1565c0; }
+
+  /* ── 테이블 ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  th {
+    background: var(--amber-dim);
+    color: var(--dark);
+    font-weight: 700;
+    text-align: left;
+    padding: 10px 14px;
+    border-bottom: 2px solid var(--border);
+  }
+  td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tr:last-child td { border-bottom: none; }
+
+  /* ── 키보드 스타일 ── */
+  .pill {
+    display: inline-block;
+    background: var(--amber-dim);
+    color: var(--amber);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  /* ── URL 박스 ── */
+  .url-box {
+    background: #1a0a00;
+    color: #f5c842;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 14px 20px;
+    border-radius: 8px;
+    margin: 12px 0;
+    word-break: break-all;
+  }
+
+  /* ── 구분선 ── */
+  hr.section-sep {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 40px 0;
+  }
+
+  /* ── 프린트 버튼 ── */
+  .print-btn {
+    position: fixed;
+    bottom: 28px;
+    right: 28px;
+    background: var(--amber);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 14px 28px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(193,127,36,0.4);
+    z-index: 999;
+    font-family: inherit;
+  }
+  .print-btn:hover { background: #d48e2a; }
+
+  /* ── 인라인 아이콘 ── */
+  .ic { font-style: normal; }
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     표지
+════════════════════════════ -->
+<div class="cover">
+  <div class="cover-icon">🥃</div>
+  <div class="cover-title">위스키 노트</div>
+  <div class="cover-sub">Whisky Notes · 사용설명서</div>
+  <div class="cover-line"></div>
+  <div class="cover-meta">나만의 위스키 컬렉션 · 시음 기록 · 향미 분석 앱</div>
+  <div class="cover-version">v1.0 · 2026</div>
+</div>
+
+<!-- ════════════════════════════
+     목차
+════════════════════════════ -->
+<div class="toc page-break">
+  <h2>목차</h2>
+  <ul class="toc-list">
+    <li><span class="toc-num">1</span><span class="toc-label">앱 소개 및 주요 기능</span></li>
+    <li><span class="toc-num">2</span><span class="toc-label">설치 방법</span></li>
+    <div class="toc-sub">2-1. 안드로이드 (Android)</div>
+    <div class="toc-sub">2-2. iOS (아이폰 / 아이패드)</div>
+    <li><span class="toc-num">3</span><span class="toc-label">위스키 컬렉션 관리</span></li>
+    <div class="toc-sub">추가 / 수정 / 삭제 · 라벨 스캔 · 사진 등록</div>
+    <li><span class="toc-num">4</span><span class="toc-label">증류소 자동완성</span></li>
+    <li><span class="toc-num">5</span><span class="toc-label">시음 노트 작성</span></li>
+    <div class="toc-sub">사진 · 향미 휠 · 점수 · 공유 카드</div>
+    <li><span class="toc-num">6</span><span class="toc-label">통계 분석</span></li>
+    <li><span class="toc-num">7</span><span class="toc-label">커뮤니티 통계</span></li>
+    <li><span class="toc-num">8</span><span class="toc-label">Google Cloud Vision API 설정</span></li>
+    <div class="toc-sub">API 키 발급 방법 · 등록 · 요금 안내</div>
+    <li><span class="toc-num">9</span><span class="toc-label">데이터 관리 및 초기화</span></li>
+    <li><span class="toc-num">10</span><span class="toc-label">자주 묻는 질문 (FAQ)</span></li>
+  </ul>
+</div>
+
+<!-- ════════════════════════════
+     1. 앱 소개
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">1</div>
+    <span class="section-emoji">🥃</span>
+    <div class="section-title">앱 소개 및 주요 기능</div>
+  </div>
+
+  <p><strong>위스키 노트</strong>는 위스키 애호가를 위한 개인 컬렉션 관리 및 시음 기록 앱입니다. 별도의 회원가입 없이 스마트폰에 바로 설치하여 사용할 수 있으며, 모든 데이터는 내 기기에 안전하게 저장됩니다.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">📦</div>
+      <div class="feature-card-title">컬렉션 관리</div>
+      <div class="feature-card-desc">보유한 위스키를 미개봉 · 개봉중 · 완음 상태로 관리. 구매 정보 · 사진 · 잔여량 추적.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📝</div>
+      <div class="feature-card-title">시음 노트</div>
+      <div class="feature-card-desc">향 · 맛 · 피니시를 텍스트로 기록. 세부 점수 슬라이더, 시음 사진 첨부 지원.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🎯</div>
+      <div class="feature-card-title">향미 휠 (레이더 차트)</div>
+      <div class="feature-card-desc">과일 · 달콤 · 스파이시 · 오크 · 스모키 · 곡물 6축으로 향미 프로파일 시각화.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📤</div>
+      <div class="feature-card-title">인스타 공유 카드</div>
+      <div class="feature-card-desc">1080×1080 PNG 카드 자동 생성. 위스키 정보 · 향미 휠 · 시음 노트 포함.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📷</div>
+      <div class="feature-card-title">라벨 스캔 (OCR)</div>
+      <div class="feature-card-desc">병 라벨 사진으로 이름 · 도수 · 숙성연수 자동 인식. Google Vision API 사용.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🔍</div>
+      <div class="feature-card-title">증류소 자동완성</div>
+      <div class="feature-card-desc">증류소 입력 시 지역 · 종류 자동완성. Wikidata 기반 실시간 검색.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">📊</div>
+      <div class="feature-card-title">통계 분석</div>
+      <div class="feature-card-desc">지역별 · 종류별 · 숙성연수별 · 도수별 시음 통계 차트.</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🌐</div>
+      <div class="feature-card-title">커뮤니티 통계</div>
+      <div class="feature-card-desc">동의한 사용자들의 익명 시음 데이터 집계. 인기 위스키 TOP 5 확인.</div>
+    </div>
+  </div>
+
+  <div class="note-box">
+    <strong>💡 오프라인 사용 가능:</strong> 앱 설치 후에는 인터넷 없이도 컬렉션 조회 및 시음 노트 작성이 가능합니다. 증류소 자동완성과 커뮤니티 통계는 인터넷 연결 시에만 작동합니다.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     2. 설치 방법
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">2</div>
+    <span class="section-emoji">📲</span>
+    <div class="section-title">설치 방법</div>
+  </div>
+
+  <p>위스키 노트는 <strong>PWA(Progressive Web App)</strong> 방식으로 배포됩니다. 앱 스토어 설치 없이 브라우저에서 직접 설치하며, 일반 앱처럼 홈 화면에서 실행됩니다.</p>
+
+  <div class="url-box">https://somiwoojoopapa1212.github.io/whisky-notes/</div>
+
+  <hr class="section-sep"/>
+
+  <h3><span class="os-badge os-android">Android</span> 안드로이드 설치</h3>
+
+  <div class="step-box">
+    <ul class="steps">
+      <li><strong>Chrome 브라우저</strong>를 열고 위 주소로 접속합니다.</li>
+      <li>화면 하단 또는 상단에 <span class="pill">앱 설치</span> 배너가 나타나면 탭합니다.<br/>
+          <em style="font-size:13px;color:#888;">배너가 없으면 다음 단계로 이동합니다.</em></li>
+      <li>배너가 없을 경우: 오른쪽 상단 점 3개(<span class="pill">⋮</span>) 메뉴 → <span class="pill">홈 화면에 추가</span> 또는 <span class="pill">앱 설치</span>를 선택합니다.</li>
+      <li>확인 팝업에서 <span class="pill">설치</span>를 탭합니다.</li>
+      <li>홈 화면에 <strong>위스키 노트 🥃</strong> 아이콘이 추가됩니다.</li>
+    </ul>
+  </div>
+
+  <div class="note-box">
+    <strong>📌 앱 내 설치 버튼:</strong> 처음 접속 시 앱 상단에 <span class="pill">📲 앱 설치</span> 버튼이 나타날 수 있습니다. 이 버튼을 탭하면 동일하게 설치됩니다.
+  </div>
+
+  <hr class="section-sep"/>
+
+  <h3><span class="os-badge os-ios">iOS</span> 아이폰 / 아이패드 설치</h3>
+
+  <div class="warn-box">
+    <strong>⚠️ 주의:</strong> iOS에서는 반드시 <strong>Safari 브라우저</strong>로 접속해야 합니다. Chrome · 네이버 앱 등 다른 브라우저에서는 홈 화면 추가가 지원되지 않습니다.
+  </div>
+
+  <div class="step-box">
+    <ul class="steps">
+      <li><strong>Safari</strong>를 열고 위 주소로 접속합니다.</li>
+      <li>하단 메뉴바의 <span class="pill">공유 버튼 ⬆️</span>을 탭합니다.<br/>
+          <em style="font-size:13px;color:#888;">(아이패드는 주소창 옆 공유 아이콘)</em></li>
+      <li>스크롤을 내려 <span class="pill">홈 화면에 추가</span>를 탭합니다.</li>
+      <li>앱 이름을 확인 후 오른쪽 상단 <span class="pill">추가</span>를 탭합니다.</li>
+      <li>홈 화면에 <strong>위스키 노트 🥃</strong> 아이콘이 추가됩니다.</li>
+    </ul>
+  </div>
+
+  <div class="note-box">
+    <strong>💡 iOS 팁:</strong>
+    <ul style="margin-top:6px;padding-left:18px;font-size:14px;">
+      <li>홈 화면에서 실행 시 주소창이 없는 전체화면 앱 모드로 동작합니다.</li>
+      <li>iOS 16.4 이상에서는 홈 화면 앱 아이콘 꾹 누르기 → <span class="pill">편집</span>으로 아이콘 이름 변경 가능.</li>
+    </ul>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>구분</th><th>Android</th><th>iOS</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>권장 브라우저</td><td>Chrome</td><td>Safari</td></tr>
+      <tr><td>설치 경로</td><td>⋮ 메뉴 → 홈 화면에 추가</td><td>공유 ⬆️ → 홈 화면에 추가</td></tr>
+      <tr><td>오프라인 사용</td><td>✅ 지원</td><td>✅ 지원</td></tr>
+      <tr><td>푸시 알림</td><td>지원 예정</td><td>iOS 16.4+ 지원</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ════════════════════════════
+     3. 컬렉션 관리
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">3</div>
+    <span class="section-emoji">📦</span>
+    <div class="section-title">위스키 컬렉션 관리</div>
+  </div>
+
+  <h3>위스키 추가</h3>
+  <p>하단 네비게이션 <span class="pill">컬렉션</span> 탭에서 우측 상단 <span class="pill">+ 추가</span> 버튼을 탭합니다.</p>
+
+  <div class="step-box">
+    <table>
+      <thead><tr><th>항목</th><th>설명</th><th>필수</th></tr></thead>
+      <tbody>
+        <tr><td>위스키 이름</td><td>병에 표기된 제품명</td><td>✅</td></tr>
+        <tr><td>증류소</td><td>제조 증류소명 (자동완성 지원)</td><td></td></tr>
+        <tr><td>지역</td><td>스페이사이드 · 하이랜드 등 (자동 입력)</td><td></td></tr>
+        <tr><td>종류</td><td>싱글몰트 · 블렌디드 · 버번 등</td><td></td></tr>
+        <tr><td>숙성연수</td><td>숫자 또는 NAS 입력</td><td></td></tr>
+        <tr><td>도수</td><td>알코올 도수 (%)</td><td></td></tr>
+        <tr><td>용량</td><td>병 용량 (ml), 기본값 700ml</td><td></td></tr>
+        <tr><td>상태</td><td>미개봉 / 개봉중 / 완음</td><td></td></tr>
+        <tr><td>구매 정보</td><td>날짜 · 가격 · 구매처</td><td></td></tr>
+        <tr><td>사진</td><td>병 사진 (정사각형 크롭)</td><td></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>📷 라벨 스캔으로 자동 입력</h3>
+  <p>추가 모달에서 <span class="pill">📷 라벨 스캔</span> 버튼 탭 → 위스키 라벨 사진을 선택하면 <strong>이름 · 도수 · 숙성연수</strong>가 자동으로 입력됩니다.</p>
+  <div class="note-box">
+    <strong>⚠️ 라벨 스캔은 Google Cloud Vision API 키가 필요합니다.</strong> 키 발급 방법은 <strong>8장</strong>을 참고하세요.
+  </div>
+
+  <h3>사진 등록 (크롭)</h3>
+  <p>사진 영역을 탭해 갤러리에서 이미지를 선택하면 <strong>정사각형 크롭</strong> 화면이 나타납니다.</p>
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li>드래그로 위치 조정</li>
+    <li>슬라이더로 확대/축소</li>
+    <li><span class="pill">확인</span> 탭으로 저장</li>
+  </ul>
+
+  <h3>카드 레이아웃</h3>
+  <p>등록된 위스키는 <strong>왼쪽 정사각형 사진 + 오른쪽 정보</strong> 형태의 카드로 표시됩니다.</p>
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li>상태 뱃지 (미개봉/개봉중/완음)</li>
+    <li>시음 횟수 · 잔여량 (개봉중일 때)</li>
+    <li>구매 가격</li>
+  </ul>
+
+  <h3>상태 필터</h3>
+  <p>컬렉션 탭 상단의 <span class="pill">전체</span> <span class="pill">미개봉</span> <span class="pill">개봉중</span> <span class="pill">완음</span> 버튼으로 필터링할 수 있습니다.</p>
+</div>
+
+<!-- ════════════════════════════
+     4. 증류소 자동완성
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">4</div>
+    <span class="section-emoji">🔍</span>
+    <div class="section-title">증류소 자동완성</div>
+  </div>
+
+  <p>위스키 추가/수정 모달에서 <span class="pill">증류소</span> 필드에 2글자 이상 입력하면 <strong>Wikidata 데이터베이스</strong>를 검색하여 실제 증류소 목록을 보여줍니다.</p>
+
+  <div class="step-box">
+    <ul class="steps">
+      <li>증류소 필드에 증류소명 입력 (예: <span class="pill">Glenfarclas</span>, <span class="pill">아드벡</span>)</li>
+      <li>0.4초 후 드롭다운 목록이 자동으로 나타납니다.</li>
+      <li>목록에서 원하는 증류소를 탭합니다.</li>
+      <li><strong>지역</strong>과 <strong>종류</strong>가 자동으로 입력됩니다.</li>
+    </ul>
+  </div>
+
+  <div class="note-box">
+    <strong>💡 자동 입력 예시:</strong><br/>
+    Glenfarclas → 지역: <span class="pill">스페이사이드</span> · 종류: <span class="pill">싱글몰트</span> 자동 입력<br/>
+    Ardbeg → 지역: <span class="pill">아일라</span> · 종류: <span class="pill">싱글몰트</span> 자동 입력
+  </div>
+
+  <p>이미 지역이나 종류가 입력된 경우에는 덮어쓰지 않으며, 비어있는 항목만 자동 채웁니다.</p>
+
+  <div class="warn-box">
+    <strong>📡 인터넷 연결 필요:</strong> 자동완성은 Wikidata API를 실시간으로 호출하므로 인터넷 연결이 필요합니다.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     5. 시음 노트
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">5</div>
+    <span class="section-emoji">📝</span>
+    <div class="section-title">시음 노트 작성</div>
+  </div>
+
+  <h3>시음 노트 추가</h3>
+  <p>하단 <span class="pill">시음 노트</span> 탭 → <span class="pill">+ 기록</span> 버튼, 또는 컬렉션 카드 탭 → 상세 화면 → <span class="pill">+ 추가</span>로 접근합니다.</p>
+
+  <div class="step-box">
+    <table>
+      <thead><tr><th>항목</th><th>설명</th></tr></thead>
+      <tbody>
+        <tr><td>위스키 선택</td><td>컬렉션에서 선택, 또는 "직접 입력(바/레스토랑)"</td></tr>
+        <tr><td>시음 날짜</td><td>날짜 선택 (기본: 오늘)</td></tr>
+        <tr><td>시음량</td><td>ml 단위 입력 (잔여량 계산에 사용)</td></tr>
+        <tr><td>컬러</td><td>페일 골든 ~ 다크 마호가니 색상 선택</td></tr>
+        <tr><td>시음 사진</td><td>잔 사진 첨부 (정사각형 크롭)</td></tr>
+        <tr><td>향 (Nose)</td><td>향 노트 자유 텍스트</td></tr>
+        <tr><td>맛 (Palate)</td><td>맛 노트 자유 텍스트</td></tr>
+        <tr><td>피니시 (Finish)</td><td>여운 노트 자유 텍스트</td></tr>
+        <tr><td>세부 점수</td><td>향 · 맛 · 피니시 각각 0~100 슬라이더</td></tr>
+        <tr><td>종합 점수</td><td>0~100 슬라이더</td></tr>
+        <tr><td>향미 휠</td><td>6개 향미 축 슬라이더 (아래 참조)</td></tr>
+        <tr><td>메모</td><td>추가 자유 메모</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>🎯 향미 휠 (Flavor Wheel)</h3>
+  <p>6개의 향미 슬라이더로 위스키의 향미 프로파일을 입력하면 실시간으로 레이더 차트 미리보기가 업데이트됩니다.</p>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <div class="feature-card-icon">🍎</div>
+      <div class="feature-card-title">과일 (Fruity)</div>
+      <div class="feature-card-desc">사과 · 배 · 복숭아 · 체리 등 과일향</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🍯</div>
+      <div class="feature-card-title">달콤 (Sweet)</div>
+      <div class="feature-card-desc">바닐라 · 꿀 · 캐러멜 · 초콜릿</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🌶️</div>
+      <div class="feature-card-title">스파이시 (Spicy)</div>
+      <div class="feature-card-desc">후추 · 생강 · 계피 · 넛멕</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🌳</div>
+      <div class="feature-card-title">오크 (Oaky)</div>
+      <div class="feature-card-desc">오크 · 우디 · 탄닌 · 셰리</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🔥</div>
+      <div class="feature-card-title">스모키 (Smoky)</div>
+      <div class="feature-card-desc">피트 · 훈연 · 재 · 해초</div>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">🌾</div>
+      <div class="feature-card-title">곡물 (Grainy)</div>
+      <div class="feature-card-desc">보리 · 밀 · 빵 · 시리얼</div>
+    </div>
+  </div>
+
+  <p>각 슬라이더는 <strong>0~5 단계</strong>로 설정합니다. 0은 해당 향미 없음, 5는 매우 강함을 의미합니다.</p>
+
+  <hr class="section-sep"/>
+
+  <h3>📤 인스타그램 공유 카드 생성</h3>
+  <p>시음 노트 카드의 <span class="pill">📤</span> 버튼을 탭하면 <strong>1080×1080px PNG 파일</strong>이 자동 생성되어 다운로드됩니다.</p>
+
+  <p>카드에 포함되는 정보:</p>
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li>위스키 이름 · 증류소 · 지역</li>
+    <li>종합 점수</li>
+    <li>시음 사진 (있을 경우)</li>
+    <li>향미 레이더 차트 (향미 데이터가 있을 경우)</li>
+    <li>향 · 맛 · 피니시 노트</li>
+    <li>기록 날짜 · 앱 워터마크</li>
+  </ul>
+
+  <div class="note-box">
+    <strong>💡 인스타그램에 공유하려면:</strong> 다운로드된 PNG 파일을 갤러리에서 찾아 인스타그램 스토리 또는 피드에 업로드하세요.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     6. 통계
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">6</div>
+    <span class="section-emoji">📊</span>
+    <div class="section-title">통계 분석</div>
+  </div>
+
+  <p>하단 <span class="pill">통계</span> 탭에서 내 시음 기록 데이터를 다양한 차트로 확인할 수 있습니다.</p>
+
+  <h3>기간 필터</h3>
+  <p>상단 탭으로 분석 기간을 선택합니다.</p>
+  <table>
+    <thead><tr><th>탭</th><th>범위</th></tr></thead>
+    <tbody>
+      <tr><td>전체</td><td>모든 시음 기록</td></tr>
+      <tr><td>이번 달</td><td>당월 1일부터 오늘까지</td></tr>
+      <tr><td>3개월</td><td>최근 3개월</td></tr>
+      <tr><td>6개월</td><td>최근 6개월</td></tr>
+      <tr><td>올해</td><td>1월 1일부터 오늘까지</td></tr>
+      <tr><td>직접 설정</td><td>시작일~종료일 직접 입력</td></tr>
+    </tbody>
+  </table>
+
+  <h3>제공 차트</h3>
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li><strong>지역별 분포</strong> — 스페이사이드 · 하이랜드 · 아일라 등</li>
+    <li><strong>종류별 분포</strong> — 싱글몰트 · 블렌디드 · 버번 등</li>
+    <li><strong>숙성연수별</strong> — NAS · 10년 이하 · 11~15년 · 16~20년 · 21년 이상</li>
+    <li><strong>도수별</strong> — 40% 미만 · 40~45% · 45~50% · 50~55% · 55% 이상</li>
+    <li><strong>점수 분석</strong> — 향 · 맛 · 피니시 · 종합 평균 점수 비교</li>
+  </ul>
+
+  <p>요약 카드에서는 <strong>총 시음 횟수 · 총 시음량(ml) · 위스키 종류 수 · 평균 점수</strong>를 한눈에 확인할 수 있습니다.</p>
+</div>
+
+<!-- ════════════════════════════
+     7. 커뮤니티 통계
+════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">7</div>
+    <span class="section-emoji">🌐</span>
+    <div class="section-title">커뮤니티 통계</div>
+  </div>
+
+  <p>더보기 메뉴(<span class="pill">⋯</span>)에서 <span class="pill">🌐 커뮤니티 통계</span>를 탭하면 다른 사용자들의 익명 시음 데이터를 확인할 수 있습니다.</p>
+
+  <ul style="padding-left:18px;margin-bottom:12px;">
+    <li>총 시음 기록 수 · 위스키 종류 · 평균 점수</li>
+    <li>인기 위스키 TOP 5</li>
+    <li>지역별 · 종류별 분포</li>
+    <li>향 · 맛 · 피니시 · 종합 평균 점수</li>
+  </ul>
+
+  <div class="note-box">
+    <strong>💡 데이터 공유 참여:</strong> 앱 첫 실행 시 나타나는 배너에서 <span class="pill">동의</span>를 탭하면 내 시음 기록이 익명으로 공유되어 커뮤니티 통계에 기여됩니다. 이름 · 연락처 등 개인정보는 일절 수집하지 않습니다.
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     8. Google Cloud Vision API
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">8</div>
+    <span class="section-emoji">🔑</span>
+    <div class="section-title">Google Cloud Vision API 설정</div>
+  </div>
+
+  <p>라벨 스캔 기능은 <strong>Google Cloud Vision API</strong>를 사용합니다. <strong>사용자 각자가 본인 계정으로 API 키를 발급</strong>받아 앱에 등록해야 합니다.</p>
+
+  <div class="warn-box">
+    <strong>🔒 중요:</strong> API 키는 내 기기에만 저장되며 다른 사람과 공유되지 않습니다. 타인의 API 키를 사용하거나 공유하지 마세요.
+  </div>
+
+  <h3>무료 사용량</h3>
+  <table>
+    <thead><tr><th>항목</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>월 무료 요청 수</td><td><strong>1,000건/월</strong></td></tr>
+      <tr><td>초과 요금</td><td>1,000건당 약 $1.50 (라벨 스캔 기준)</td></tr>
+      <tr><td>결제 등록 없이</td><td>무료 $300 크레딧 90일 제공 (신규)</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:13px;color:#888;">월 1,000번이면 매일 33번 스캔 가능 — 개인 사용자는 무료 범위에서 충분히 사용 가능합니다.</p>
+
+  <h3>API 키 발급 방법</h3>
+  <div class="step-box">
+    <ul class="steps">
+      <li><strong>Google Cloud Console</strong> 접속<br/>
+          <span class="url-box" style="font-size:13px;padding:8px 14px;">https://console.cloud.google.com/</span></li>
+      <li>Google 계정으로 로그인 후, 상단 <span class="pill">프로젝트 선택</span> → <span class="pill">새 프로젝트</span>를 클릭합니다.<br/>
+          프로젝트 이름 예시: <span class="pill">whisky-notes</span></li>
+      <li>왼쪽 메뉴 <span class="pill">API 및 서비스</span> → <span class="pill">라이브러리</span>로 이동합니다.</li>
+      <li>검색창에 <span class="pill">Cloud Vision API</span>를 검색 후 클릭 → <span class="pill">사용 설정</span>을 클릭합니다.</li>
+      <li>왼쪽 메뉴 <span class="pill">사용자 인증 정보</span> → 상단 <span class="pill">+ 사용자 인증 정보 만들기</span> → <span class="pill">API 키</span>를 선택합니다.</li>
+      <li>생성된 <strong>API 키</strong>를 복사합니다.<br/>
+          <em style="font-size:13px;color:#888;">예: AIzaSyA···············</em></li>
+      <li>(권장) <span class="pill">키 제한</span>을 클릭 → <span class="pill">API 제한</span>에서 <span class="pill">Cloud Vision API</span>만 선택 후 저장합니다.</li>
+    </ul>
+  </div>
+
+  <h3>앱에 API 키 등록</h3>
+  <div class="step-box">
+    <ul class="steps">
+      <li>앱 하단 <span class="pill">더보기 ⋯</span> 메뉴 → <span class="pill">⚙️ 설정</span>을 탭합니다.</li>
+      <li><span class="pill">Vision API 키</span> 입력란에 복사한 키를 붙여넣습니다.</li>
+      <li><span class="pill">저장</span>을 탭합니다.</li>
+      <li>이후 위스키 추가 화면에서 <span class="pill">📷 라벨 스캔</span>을 사용할 수 있습니다.</li>
+    </ul>
+  </div>
+
+  <div class="note-box">
+    <strong>💡 라벨 스캔 팁:</strong>
+    <ul style="margin-top:6px;padding-left:18px;font-size:14px;">
+      <li>라벨이 선명하게 보이는 사진일수록 인식률이 높습니다.</li>
+      <li>빛 반사나 그림자가 없는 평평한 배경에서 촬영하세요.</li>
+      <li>인식 결과는 참고용으로 확인 후 수정이 가능합니다.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ════════════════════════════
+     9. 데이터 관리
+════════════════════════════ -->
+<div class="section">
+  <div class="section-header">
+    <div class="section-num">9</div>
+    <span class="section-emoji">💾</span>
+    <div class="section-title">데이터 관리 및 초기화</div>
+  </div>
+
+  <h3>데이터 저장 방식</h3>
+  <table>
+    <thead><tr><th>데이터 종류</th><th>저장 위치</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr><td>컬렉션 · 시음 노트</td><td>기기 localStorage</td><td>앱 삭제 시 함께 삭제</td></tr>
+      <tr><td>위스키 사진 · 시음 사진</td><td>기기 IndexedDB</td><td>용량 큰 이미지 별도 보관</td></tr>
+      <tr><td>API 키 · 동의 상태</td><td>기기 localStorage</td><td></td></tr>
+    </tbody>
+  </table>
+
+  <div class="warn-box">
+    <strong>⚠️ 백업 주의:</strong> 현재 버전은 데이터를 내보내기/가져오기 기능이 없습니다. 브라우저 캐시 삭제나 앱 재설치 시 데이터가 삭제될 수 있습니다. 중요한 기록은 공유 카드로 내보내 보관하세요.
+  </div>
+
+  <h3>전체 데이터 초기화</h3>
+  <p>더보기(<span class="pill">⋯</span>) → 설정 → <span class="pill">데이터 초기화</span>를 탭하면 모든 컬렉션과 시음 노트가 삭제됩니다. <strong>이 작업은 되돌릴 수 없습니다.</strong></p>
+</div>
+
+<!-- ════════════════════════════
+     10. FAQ
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <span class="section-emoji">❓</span>
+    <div class="section-title">자주 묻는 질문 (FAQ)</div>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. 앱을 재설치하면 데이터가 사라지나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 네, 현재 버전은 기기 로컬에 저장하므로 앱 삭제 시 데이터도 함께 삭제됩니다. 브라우저 데이터 삭제(캐시 초기화) 시에도 동일합니다.</p>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. 여러 기기에서 동기화할 수 있나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 현재 버전은 단일 기기 전용입니다. 기기간 동기화는 향후 업데이트 예정입니다.</p>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. 라벨 스캔이 인식을 못할 때 어떻게 하나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 라벨이 선명하게 보이도록 조명을 확보하고, 최대한 정면에서 촬영해 보세요. 인식 결과가 없거나 부정확하면 수동으로 입력하시면 됩니다.</p>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. Vision API 키는 다른 사람과 공유해도 되나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 공유하지 않는 것을 강력히 권장합니다. 다른 사람이 내 키를 사용하면 무료 한도가 빠르게 소진되고, 예상치 못한 과금이 발생할 수 있습니다. 각자 본인 계정으로 발급받으세요.</p>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. 바나 레스토랑에서 마신 위스키도 기록할 수 있나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 네. 시음 노트 추가 시 위스키 선택에서 <span class="pill">✏️ 직접 입력 (바 / 레스토랑 등)</span>을 선택하면 컬렉션에 없는 위스키도 자유롭게 기록할 수 있습니다.</p>
+  </div>
+
+  <div class="step-box" style="margin-bottom:16px;">
+    <strong>Q. 향미 휠을 입력하지 않아도 되나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 네, 향미 슬라이더는 선택 항목입니다. 모두 0으로 두면 향미 차트는 표시되지 않습니다.</p>
+  </div>
+
+  <div class="step-box">
+    <strong>Q. 피드백이나 버그는 어디에 제보하나요?</strong>
+    <p style="margin-top:8px;margin-bottom:0;">A. 더보기(<span class="pill">⋯</span>) → <span class="pill">피드백 보내기</span>에서 이메일 또는 인스타그램 DM으로 제보할 수 있습니다.</p>
+  </div>
+
+  <div style="margin-top:60px;text-align:center;color:var(--text-muted);font-size:13px;border-top:1px solid var(--border);padding-top:32px;">
+    <div style="font-size:32px;margin-bottom:12px;">🥃</div>
+    <div style="font-weight:700;font-size:16px;color:var(--amber);margin-bottom:6px;">위스키 노트</div>
+    <div>좋은 위스키는 기록될 때 더 오래 기억됩니다</div>
+    <div style="margin-top:16px;">v1.0 · 2026 · shuttle1207@gmail.com</div>
+  </div>
+</div>
+
+<!-- 인쇄 버튼 -->
+<button class="print-btn no-print" onclick="window.print()">🖨️ PDF로 저장</button>
+
+</body>
+</html>
