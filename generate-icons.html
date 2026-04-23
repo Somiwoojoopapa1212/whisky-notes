@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>아이콘 생성기</title>
+<style>
+  body { font-family: sans-serif; padding: 32px; background: #1a0a00; color: #f5c842; }
+  button { margin: 8px; padding: 10px 20px; background: #c17f24; color: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 15px; }
+  canvas { border: 1px solid #555; margin: 8px; display: block; }
+  h2 { color: #f5c842; }
+  p { color: #aaa; }
+</style>
+</head>
+<body>
+<h2>위스키 노트 아이콘 생성기</h2>
+<p>아래 버튼을 클릭하면 PNG 아이콘 파일이 다운로드됩니다.<br>
+다운로드된 파일을 <code>icons/</code> 폴더에 덮어쓰기 하세요.</p>
+
+<button onclick="generate(192,'icon-192.png')">192×192 다운로드</button>
+<button onclick="generate(512,'icon-512.png')">512×512 다운로드</button>
+<button onclick="generate(512,'icon-maskable-512.png', true)">512×512 Maskable 다운로드</button>
+<button onclick="generate(180,'apple-touch-icon.png')">180×180 Apple 다운로드</button>
+<br>
+<canvas id="preview" width="256" height="256"></canvas>
+
+<script>
+const SVG_SRC = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1a0a00"/>
+      <stop offset="100%" stop-color="#2e1200"/>
+    </linearGradient>
+    <linearGradient id="wg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f5c842"/>
+      <stop offset="50%" stop-color="#c17f24"/>
+      <stop offset="100%" stop-color="#7a3e05"/>
+    </linearGradient>
+    <clipPath id="gc">
+      <path d="M206,82 L306,82 C346,115 358,182 356,252 C354,322 316,358 278,382 C286,398 318,408 320,414 L320,448 L192,448 L192,414 C194,408 226,398 234,382 C196,358 158,322 156,252 C154,182 166,115 206,82 Z"/>
+    </clipPath>
+  </defs>
+  BGSHAPE
+  <ellipse cx="256" cy="280" rx="130" ry="110" fill="#c17f24" opacity="0.12"/>
+  <rect x="100" y="200" width="330" height="280" clip-path="url(#gc)" fill="url(#wg)"/>
+  <ellipse cx="256" cy="200" rx="92" ry="7" clip-path="url(#gc)" fill="#f8e070" opacity="0.85"/>
+  <path d="M206,82 L306,82 C346,115 358,182 356,252 C354,322 316,358 278,382 C286,398 318,408 320,414 L320,448 L192,448 L192,414 C194,408 226,398 234,382 C196,358 158,322 156,252 C154,182 166,115 206,82 Z" fill="rgba(255,220,150,0.04)"/>
+  <path d="M212,98 C176,135 162,196 161,262" fill="none" stroke="rgba(255,255,255,0.55)" stroke-width="13" stroke-linecap="round"/>
+  <path d="M300,98 C334,135 348,196 349,262" fill="none" stroke="rgba(255,255,255,0.12)" stroke-width="7" stroke-linecap="round"/>
+  <path d="M206,82 L306,82 C346,115 358,182 356,252 C354,322 316,358 278,382 C286,398 318,408 320,414 L320,448 L192,448 L192,414 C194,408 226,398 234,382 C196,358 158,322 156,252 C154,182 166,115 206,82 Z" fill="none" stroke="rgba(200,155,70,0.75)" stroke-width="9" stroke-linejoin="round"/>
+  <line x1="206" y1="82" x2="306" y2="82" stroke="rgba(255,230,120,0.7)" stroke-width="5" stroke-linecap="round"/>
+</svg>`;
+
+function generate(size, filename, maskable = false) {
+  const bg = maskable
+    ? `<rect width="512" height="512" fill="url(#bg)"/>`
+    : `<rect width="512" height="512" rx="90" fill="url(#bg)"/>`;
+  const svg = SVG_SRC.replace('BGSHAPE', bg);
+
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, size, size);
+    URL.revokeObjectURL(url);
+
+    // Preview
+    const preview = document.getElementById('preview');
+    preview.width = preview.height = Math.min(size, 256);
+    const pCtx = preview.getContext('2d');
+    pCtx.drawImage(canvas, 0, 0, Math.min(size,256), Math.min(size,256));
+
+    // Download
+    canvas.toBlob(b => {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(b);
+      a.download = filename;
+      a.click();
+    }, 'image/png');
+  };
+  img.src = url;
+}
+
+// Auto-preview on load
+window.onload = () => generate(256, 'preview.png');
+</script>
+</body>
+</html>

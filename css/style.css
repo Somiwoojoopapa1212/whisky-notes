@@ -1,3 +1,80 @@
+/* ══════════════════════════════
+   ── 스플래시 화면 ──
+   ══════════════════════════════ */
+#splash-screen {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at 50% 60%, #2e1500 0%, #110700 60%, #0a0400 100%);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: splashOut 0.7s cubic-bezier(0.4, 0, 0.6, 1) 3s forwards;
+}
+@keyframes splashOut {
+  to { opacity: 0; visibility: hidden; }
+}
+.splash-inner { display: flex; flex-direction: column; align-items: center; }
+.splash-pour-wrap { height: 40px; display: flex; justify-content: center; align-items: flex-end; }
+.splash-pour-stream {
+  width: 7px; height: 0;
+  background: linear-gradient(180deg, rgba(245,200,66,0) 0%, rgba(245,200,66,0.85) 100%);
+  border-radius: 4px;
+  animation: pourStream 0.5s ease-out 0.2s forwards, pourFade 0.3s ease 1.5s forwards;
+}
+@keyframes pourStream {
+  from { height: 0; opacity: 0; }
+  to   { height: 36px; opacity: 1; }
+}
+@keyframes pourFade {
+  to { opacity: 0; height: 0; }
+}
+.splash-glass-svg { width: 140px; height: 175px; }
+.sp-glass, .sp-base {
+  opacity: 0;
+  animation: glassAppear 0.4s ease 0.15s forwards;
+}
+@keyframes glassAppear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.sp-liquid {
+  animation: liquidRise 1.4s cubic-bezier(0.25, 0.8, 0.35, 1) 0.6s forwards;
+}
+@keyframes liquidRise {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-68px); }
+}
+.sp-surface {
+  opacity: 0;
+  animation: surfaceShow 0.4s ease 1.6s forwards;
+}
+@keyframes surfaceShow {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.splash-title {
+  color: #c17f24;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  margin-top: 18px;
+  opacity: 0;
+  animation: textRise 0.6s ease 1.8s forwards;
+}
+.splash-sub {
+  color: rgba(193,127,36,0.55);
+  font-size: 12px;
+  letter-spacing: 1px;
+  margin-top: 6px;
+  opacity: 0;
+  animation: textRise 0.6s ease 2s forwards;
+}
+@keyframes textRise {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 :root {
   --primary: #c17f24;
   --primary-dark: #9a6318;

@@ -57,6 +57,11 @@ const COLOR_HEX = {
 
 // ── 초기화 ──
 document.addEventListener('DOMContentLoaded', () => {
+  // 스플래시 화면 제거 (CSS 애니메이션 완료 후)
+  setTimeout(() => {
+    const splash = document.getElementById('splash-screen');
+    if (splash) splash.remove();
+  }, 3800);
   setupNav();
   setupTabFilters();
   document.getElementById('tasting-filter-whisky').addEventListener('change', e => {
