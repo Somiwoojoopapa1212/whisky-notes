@@ -1590,6 +1590,69 @@ body {
   .taste-report-info { width: 100%; }
 }
 
+/* ── 데이터 내보내기/가져오기 ── */
+.btn-danger {
+  background: var(--danger);
+  color: #fff;
+  border: 1px solid var(--danger);
+  padding: 9px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.btn-danger:hover { opacity: 0.85; }
+.btn-danger:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.import-file-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: var(--secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background 0.15s;
+}
+.import-file-label:hover { background: var(--border); }
+.import-file-label input { display: none; }
+
+.import-preview-box {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: var(--secondary);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+.import-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  font-size: 14px;
+}
+.import-preview-date {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.import-mode-box {
+  margin-top: 16px;
+  padding: 14px 16px;
+  background: var(--primary-light);
+  border-radius: 10px;
+  border: 1px solid rgba(193,127,36,0.2);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.import-mode-row { display: flex; gap: 10px; align-items: flex-start; }
+.import-mode-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
 /* ── 위시리스트 ── */
 .wishlist-grid {
   display: grid;

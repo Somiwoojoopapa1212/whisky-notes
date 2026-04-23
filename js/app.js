@@ -1979,6 +1979,138 @@ function setSliderVal(sliderId, valId, val) {
 }
 
 // ══════════════════════════════
+// ── 데이터 내보내기 / 가져오기 ──
+// ══════════════════════════════
+async function exportData() {
+  showToast('데이터를 준비하는 중... ⏳');
+  const whiskies = Storage.getWhiskies();
+  const tastings = Storage.getTastings();
+  const wishlist = Storage.getWishlist();
+
+  const images = {};
+  for (const w of whiskies) {
+    const img = await ImageDB.get(w.id);
+    if (img) images[w.id] = img;
+  }
+  for (const t of tastings) {
+    const img = await ImageDB.get('tasting_' + t.id);
+    if (img) images['tasting_' + t.id] = img;
+  }
+
+  const payload = {
+    version: '1.0',
+    app: '위스키 노트',
+    exportedAt: new Date().toISOString(),
+    data: { whiskies, tastings, wishlist },
+    images,
+  };
+
+  const blob = new Blob([JSON.stringify(payload)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `whisky-notes-${new Date().toISOString().split('T')[0]}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showToast(`내보내기 완료! 위스키 ${whiskies.length}개 · 시음노트 ${tastings.length}개 · 이미지 ${Object.keys(images).length}개`);
+}
+
+let _pendingImportData = null;
+
+function openImportModal() {
+  _pendingImportData = null;
+  const fileEl = document.getElementById('import-file');
+  if (fileEl) fileEl.value = '';
+  document.getElementById('import-preview').innerHTML = '';
+  document.getElementById('import-btn-merge').disabled = true;
+  document.getElementById('import-btn-replace').disabled = true;
+  openModal('modal-import');
+}
+
+function handleImportFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.data || !Array.isArray(data.data.whiskies)) throw new Error('올바르지 않은 위스키 노트 파일입니다.');
+      _pendingImportData = data;
+      const { whiskies = [], tastings = [], wishlist = [] } = data.data;
+      const imgCount = Object.keys(data.images || {}).length;
+      document.getElementById('import-preview').innerHTML = `
+        <div class="import-preview-box">
+          <div class="import-preview-row"><span>📦 위스키</span><strong>${whiskies.length}개</strong></div>
+          <div class="import-preview-row"><span>📝 시음 노트</span><strong>${tastings.length}개</strong></div>
+          <div class="import-preview-row"><span>🔖 위시리스트</span><strong>${wishlist.length}개</strong></div>
+          <div class="import-preview-row"><span>📷 이미지</span><strong>${imgCount}개</strong></div>
+          <div class="import-preview-date">내보낸 날짜: ${data.exportedAt ? new Date(data.exportedAt).toLocaleString('ko') : '알 수 없음'}</div>
+        </div>
+      `;
+      document.getElementById('import-btn-merge').disabled = false;
+      document.getElementById('import-btn-replace').disabled = false;
+    } catch (err) {
+      _pendingImportData = null;
+      document.getElementById('import-preview').innerHTML =
+        `<p style="color:var(--danger);margin-top:10px">❌ ${err.message}</p>`;
+      document.getElementById('import-btn-merge').disabled = true;
+      document.getElementById('import-btn-replace').disabled = true;
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function doImport(mode) {
+  if (!_pendingImportData) return;
+  const { whiskies = [], tastings = [], wishlist = [] } = _pendingImportData.data;
+  const images = _pendingImportData.images || {};
+
+  if (mode === 'replace') {
+    if (!confirm('기존의 모든 데이터가 삭제되고 파일 내용으로 교체됩니다.\n계속하시겠습니까?')) return;
+    Storage.saveWhiskies([]);
+    Storage.saveTastings([]);
+    Storage.saveWishlist([]);
+    await new Promise(res => {
+      const req = indexedDB.deleteDatabase('whiskyImagesDB');
+      req.onsuccess = req.onerror = () => { ImageDB._db = null; res(); };
+    });
+    Storage.saveWhiskies(whiskies);
+    Storage.saveTastings(tastings);
+    Storage.saveWishlist(wishlist);
+    for (const [id, dataUrl] of Object.entries(images)) {
+      await ImageDB.save(id, dataUrl);
+    }
+  } else {
+    const exW = new Set(Storage.getWhiskies().map(w => w.id));
+    const exT = new Set(Storage.getTastings().map(t => t.id));
+    const exWl = new Set(Storage.getWishlist().map(w => w.id));
+
+    const newW  = whiskies.filter(w => !exW.has(w.id));
+    const newT  = tastings.filter(t => !exT.has(t.id));
+    const newWl = wishlist.filter(w => !exWl.has(w.id));
+
+    Storage.saveWhiskies([...Storage.getWhiskies(), ...newW]);
+    Storage.saveTastings([...Storage.getTastings(), ...newT]);
+    Storage.saveWishlist([...Storage.getWishlist(), ...newWl]);
+
+    for (const [id, dataUrl] of Object.entries(images)) {
+      const tId = id.startsWith('tasting_') ? id.slice(8) : id;
+      const isNew = id.startsWith('tasting_') ? newT.some(t => t.id === tId) : newW.some(w => w.id === id);
+      if (isNew) await ImageDB.save(id, dataUrl);
+    }
+  }
+
+  closeModal('modal-import');
+  _pendingImportData = null;
+  const total = whiskies.length + tastings.length;
+  showToast(`가져오기 완료! 🎉 위스키 ${whiskies.length}개 · 시음노트 ${tastings.length}개`);
+  renderPage(currentPage);
+}
+
+// ══════════════════════════════
 // ── 위시리스트 ──
 // ══════════════════════════════
 let editingWishlistId = null;

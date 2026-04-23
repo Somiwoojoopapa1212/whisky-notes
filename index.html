@@ -107,6 +107,12 @@
         <button class="feedback-btn" onclick="openSettingsModal()">
           <span>⚙️</span><span>설정</span>
         </button>
+        <button class="feedback-btn" onclick="exportData()">
+          <span>📤</span><span>데이터 내보내기</span>
+        </button>
+        <button class="feedback-btn" onclick="openImportModal()">
+          <span>📥</span><span>데이터 가져오기</span>
+        </button>
         <button class="reset-btn" onclick="resetAllData()">
           <span>🗑️</span><span>전체 데이터 초기화</span>
         </button>
@@ -597,6 +603,21 @@
         </div>
       </button>
       <div class="more-menu-divider"></div>
+      <button class="more-menu-item" onclick="closeMoreMenu(); exportData()">
+        <span class="more-menu-icon">📤</span>
+        <div>
+          <div class="more-menu-label">데이터 내보내기</div>
+          <div class="more-menu-desc">전체 데이터를 JSON 파일로 저장</div>
+        </div>
+      </button>
+      <button class="more-menu-item" onclick="closeMoreMenu(); openImportModal()">
+        <span class="more-menu-icon">📥</span>
+        <div>
+          <div class="more-menu-label">데이터 가져오기</div>
+          <div class="more-menu-desc">JSON 파일에서 데이터 복원</div>
+        </div>
+      </button>
+      <div class="more-menu-divider"></div>
       <button class="more-menu-item danger" onclick="closeMoreMenu(); resetAllData()">
         <span class="more-menu-icon">🗑️</span>
         <div>
@@ -678,6 +699,45 @@
     <div class="consent-actions">
       <button class="btn btn-outline btn-sm" onclick="setConsent(false)">괜찮아요</button>
       <button class="btn btn-primary btn-sm" onclick="setConsent(true)">동의합니다</button>
+    </div>
+  </div>
+
+  <!-- 데이터 가져오기 모달 -->
+  <div class="modal-overlay" id="modal-import">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>📥 데이터 가져오기</h2>
+        <button class="btn-close" onclick="closeModal('modal-import')">×</button>
+      </div>
+      <div class="modal-body">
+        <p style="margin-bottom:14px">이전에 내보낸 <strong>위스키 노트 JSON 파일</strong>을 선택하세요.</p>
+        <label class="import-file-label">
+          <span>📂 파일 선택</span>
+          <input type="file" id="import-file" accept=".json" onchange="handleImportFile(this)" />
+        </label>
+        <div id="import-preview"></div>
+        <div class="import-mode-box">
+          <div class="import-mode-row">
+            <span class="import-mode-icon">🔀</span>
+            <div>
+              <strong>병합</strong> — 기존 데이터를 유지하면서 파일의 새 항목만 추가합니다.<br/>
+              <span style="font-size:12px;color:var(--text-muted)">ID가 같은 항목은 건너뜁니다.</span>
+            </div>
+          </div>
+          <div class="import-mode-row" style="margin-top:10px">
+            <span class="import-mode-icon">🔄</span>
+            <div>
+              <strong>덮어쓰기</strong> — 기존 데이터를 모두 삭제하고 파일 내용으로 교체합니다.<br/>
+              <span style="font-size:12px;color:var(--danger)">이 작업은 되돌릴 수 없습니다.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('modal-import')">취소</button>
+        <button class="btn btn-primary" id="import-btn-merge" disabled onclick="doImport('merge')">🔀 병합</button>
+        <button class="btn btn-danger" id="import-btn-replace" disabled onclick="doImport('replace')">🔄 덮어쓰기</button>
+      </div>
     </div>
   </div>
 

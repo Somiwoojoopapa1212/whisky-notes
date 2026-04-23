@@ -841,11 +841,81 @@
 </div>
 
 <!-- ════════════════════════════
-     10. 커뮤니티 통계
+     10. 데이터 내보내기 / 가져오기
+════════════════════════════ -->
+<div class="section page-break">
+  <div class="section-header">
+    <div class="section-num">10</div>
+    <span class="section-emoji">📦</span>
+    <div class="section-title">데이터 내보내기 / 가져오기</div>
+  </div>
+
+  <p>기기 변경, 백업, 데이터 복원을 위해 <strong>전체 데이터를 JSON 파일로 내보내고 가져올 수</strong> 있습니다. 이미지를 포함한 모든 데이터가 하나의 파일에 저장됩니다.</p>
+
+  <h3>데이터 내보내기 (백업)</h3>
+  <div class="step-box">
+    <ul class="steps">
+      <li>하단 <span class="pill">더보기 ☰</span> 메뉴 → <span class="pill">📤 데이터 내보내기</span>를 탭합니다.</li>
+      <li>잠시 기다리면 <strong>whisky-notes-날짜.json</strong> 파일이 자동으로 다운로드됩니다.</li>
+      <li>이 파일을 안전한 위치(Google Drive · 카카오톡 · 이메일 등)에 보관하세요.</li>
+    </ul>
+  </div>
+
+  <table>
+    <thead><tr><th>포함 데이터</th><th>내용</th></tr></thead>
+    <tbody>
+      <tr><td>📦 위스키 컬렉션</td><td>이름 · 증류소 · 지역 · 종류 · 구매정보 등 모든 메타데이터</td></tr>
+      <tr><td>📝 시음 노트</td><td>향 · 맛 · 피니시 · 점수 · 향미 프로필 등</td></tr>
+      <tr><td>🔖 위시리스트</td><td>이름 · 우선순위 · 목표가격 · 구매완료 여부 등</td></tr>
+      <tr><td>📷 이미지</td><td>위스키 · 시음 사진 (Base64 내장)</td></tr>
+    </tbody>
+  </table>
+
+  <div class="note-box">
+    <strong>💡 이미지 포함 시 파일 크기:</strong> 사진이 많을수록 파일이 커집니다. 위스키 20개 · 사진 20장 기준 약 5~15MB 예상.
+  </div>
+
+  <h3>데이터 가져오기 (복원)</h3>
+  <div class="step-box">
+    <ul class="steps">
+      <li>하단 <span class="pill">더보기 ☰</span> 메뉴 → <span class="pill">📥 데이터 가져오기</span>를 탭합니다.</li>
+      <li><span class="pill">📂 파일 선택</span>을 탭하여 이전에 내보낸 JSON 파일을 선택합니다.</li>
+      <li>파일 내용 미리보기(위스키 수 · 시음노트 수 · 이미지 수)를 확인합니다.</li>
+      <li>가져오기 방식을 선택합니다.</li>
+    </ul>
+  </div>
+
+  <h3>가져오기 방식</h3>
+  <table>
+    <thead><tr><th>방식</th><th>동작</th><th>주의사항</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><strong>🔀 병합</strong></td>
+        <td>기존 데이터를 유지하면서 파일의 새 항목만 추가</td>
+        <td>ID가 같은 항목은 건너뜀 (중복 방지)</td>
+      </tr>
+      <tr>
+        <td><strong>🔄 덮어쓰기</strong></td>
+        <td>기존 데이터를 모두 삭제하고 파일 내용으로 완전 교체</td>
+        <td style="color:#b91c1c">되돌릴 수 없음 · 반드시 백업 후 사용</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>활용 예시</h3>
+  <ul style="padding-left:18px;margin-bottom:12px;line-height:2">
+    <li><strong>기기 교체 시</strong>: 구 기기에서 내보내기 → 새 기기에서 덮어쓰기로 가져오기</li>
+    <li><strong>정기 백업</strong>: 월 1회 내보내기 파일을 클라우드에 저장</li>
+    <li><strong>데이터 병합</strong>: 여러 기기의 데이터를 하나로 합칠 때 병합 모드 사용</li>
+  </ul>
+</div>
+
+<!-- ════════════════════════════
+     11. 커뮤니티 통계
 ════════════════════════════ -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">10</div>
+    <div class="section-num">11</div>
     <span class="section-emoji">🌐</span>
     <div class="section-title">커뮤니티 통계</div>
   </div>
@@ -869,7 +939,7 @@
 ════════════════════════════ -->
 <div class="section page-break">
   <div class="section-header">
-    <div class="section-num">11</div>
+    <div class="section-num">12</div>
     <span class="section-emoji">🔑</span>
     <div class="section-title">Google Cloud Vision API 설정</div>
   </div>
@@ -932,7 +1002,7 @@
 ════════════════════════════ -->
 <div class="section">
   <div class="section-header">
-    <div class="section-num">12</div>
+    <div class="section-num">13</div>
     <span class="section-emoji">💾</span>
     <div class="section-title">데이터 관리 및 초기화</div>
   </div>
@@ -960,7 +1030,7 @@
 ════════════════════════════ -->
 <div class="section page-break">
   <div class="section-header">
-    <div class="section-num">13</div>
+    <div class="section-num">14</div>
     <span class="section-emoji">❓</span>
     <div class="section-title">자주 묻는 질문 (FAQ)</div>
   </div>
