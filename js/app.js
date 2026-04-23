@@ -195,6 +195,9 @@ async function generateShareCard(tastingId) {
     ctx.fillStyle = g; ctx.fillRect(0, 0, S, S);
   });
 
+  // 하단 90px 고정 예약 (푸터 영역)
+  const FOOTER_TOP = S - 90;
+
   // 상단 구분선
   ctx.fillStyle = '#c17f24'; ctx.fillRect(60, 58, S - 120, 2);
 
@@ -212,15 +215,14 @@ async function generateShareCard(tastingId) {
 
   let y = 130;
 
-  // 사진 (있으면 오른쪽 상단)
-  const PH = 300;
+  // 사진 (있으면 오른쪽 상단, 280×280)
+  const PH = 280;
   if (photo) {
     await new Promise(res => {
       const img = new Image(); img.onload = () => {
         ctx.save();
         _roundRect(ctx, S - 60 - PH, y, PH, PH, 18);
         ctx.clip(); ctx.drawImage(img, S - 60 - PH, y, PH, PH); ctx.restore();
-        // 테두리
         _roundRect(ctx, S - 60 - PH, y, PH, PH, 18);
         ctx.strokeStyle = 'rgba(193,127,36,0.4)'; ctx.lineWidth = 2; ctx.stroke();
         res();
@@ -230,53 +232,48 @@ async function generateShareCard(tastingId) {
 
   // 위스키 이름
   const nameMaxW = photo ? S - 180 - PH : S - 120;
-  ctx.font = 'bold 72px -apple-system,sans-serif';
+  ctx.font = 'bold 68px -apple-system,sans-serif';
   ctx.fillStyle = '#f5c842'; ctx.textAlign = 'left'; ctx.textBaseline = 'top';
   const nameLines = _wrapText(ctx, name, nameMaxW);
-  nameLines.forEach((line, i) => ctx.fillText(line, 60, y + i * 86));
-  y += nameLines.length * 86 + 12;
+  nameLines.forEach((line, i) => ctx.fillText(line, 60, y + i * 82));
+  y += nameLines.length * 82 + 12;
 
   // 증류소/지역
   if (sub) {
-    ctx.font = '36px -apple-system,sans-serif';
+    ctx.font = '34px -apple-system,sans-serif';
     ctx.fillStyle = 'rgba(245,200,66,0.5)';
-    ctx.fillText(sub, 60, y); y += 52;
+    ctx.fillText(sub, 60, y); y += 48;
   }
 
   // 점수
   if (t.score) {
-    ctx.font = 'bold 40px -apple-system,sans-serif';
+    ctx.font = 'bold 38px -apple-system,sans-serif';
     ctx.fillStyle = '#c17f24';
-    ctx.fillText(`★ ${t.score}점`, 60, y); y += 58;
+    ctx.fillText(`★ ${t.score}점`, 60, y); y += 54;
   }
 
-  y = Math.max(y, photo ? 130 + PH + 30 : y) + 20;
-
-  // 구분선
-  ctx.strokeStyle = 'rgba(193,127,36,0.22)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(S - 60, y); ctx.stroke();
-  y += 30;
-
-  // 향미 휠
-  const hasFl = t.flavors && Object.values(t.flavors).some(v => v > 0);
-  if (hasFl) {
-    const WH = 380;
-    const wc = document.createElement('canvas');
-    wc.width = wc.height = WH;
-    drawRadarChart(wc, t.flavors, {
-      padding: 65, fontSize: 24, labelPad: 32,
-      lineWidth: 3, dotRadius: 6,
-      fillColor: 'rgba(193,127,36,0.22)',
-      lineColor: 'rgba(193,127,36,0.9)',
-      labelColor: 'rgba(245,210,100,0.85)',
-    });
-    ctx.drawImage(wc, (S - WH) / 2, y); y += WH + 24;
-  }
+  y = Math.max(y, photo ? 130 + PH + 20 : y) + 20;
 
   // 구분선
   ctx.strokeStyle = 'rgba(193,127,36,0.22)'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(S - 60, y); ctx.stroke();
   y += 28;
+
+  // 향미 휠 (320×320)
+  const hasFl = t.flavors && Object.values(t.flavors).some(v => v > 0);
+  if (hasFl) {
+    const WH = 320;
+    const wc = document.createElement('canvas');
+    wc.width = wc.height = WH;
+    drawRadarChart(wc, t.flavors, {
+      padding: 58, fontSize: 22, labelPad: 28,
+      lineWidth: 3, dotRadius: 6,
+      fillColor: 'rgba(193,127,36,0.22)',
+      lineColor: 'rgba(193,127,36,0.9)',
+      labelColor: 'rgba(245,210,100,0.85)',
+    });
+    ctx.drawImage(wc, (S - WH) / 2, y); y += WH + 18;
+  }
 
   // 시음 노트
   const noteRows = [
@@ -284,20 +281,57 @@ async function generateShareCard(tastingId) {
     t.palate ? ['맛',    t.palate] : null,
     t.finish ? ['피니시', t.finish] : null,
   ].filter(Boolean);
-  for (const [label, text] of noteRows) {
-    ctx.font = 'bold 28px -apple-system,sans-serif'; ctx.fillStyle = '#c17f24';
-    ctx.textAlign = 'left'; ctx.fillText(label, 60, y);
-    ctx.font = '28px -apple-system,sans-serif'; ctx.fillStyle = 'rgba(255,225,170,0.85)';
-    const trunc = text.length > 48 ? text.slice(0, 48) + '…' : text;
-    ctx.fillText(trunc, 60 + 90, y); y += 46;
+
+  if (noteRows.length > 0) {
+    // 구분선
+    ctx.strokeStyle = 'rgba(193,127,36,0.22)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(60, y); ctx.lineTo(S - 60, y); ctx.stroke();
+    y += 24;
+
+    const FS = 26;  // 폰트 크기
+    const ROW_H = 44; // 행 높이
+
+    for (const [label, text] of noteRows) {
+      if (y + FS > FOOTER_TOP - 16) break; // 푸터 영역 침범 방지
+
+      ctx.textBaseline = 'top';
+
+      // 레이블 (픽셀 폭 측정)
+      ctx.font = `bold ${FS}px -apple-system,sans-serif`;
+      ctx.fillStyle = '#c17f24';
+      ctx.textAlign = 'left';
+      ctx.fillText(label, 60, y);
+      const labelW = ctx.measureText(label).width;
+
+      // 구분자
+      const sep = '  ·  ';
+      ctx.font = `${FS}px -apple-system,sans-serif`;
+      ctx.fillStyle = 'rgba(193,127,36,0.5)';
+      ctx.fillText(sep, 60 + labelW, y);
+      const sepW = ctx.measureText(sep).width;
+
+      // 내용 (픽셀 기반 truncate — 한국어/영어 모두 정확하게 처리)
+      const textX = 60 + labelW + sepW;
+      const maxW = S - 60 - textX;
+      ctx.fillStyle = 'rgba(255,225,170,0.85)';
+      let displayText = text;
+      while (displayText.length > 1 && ctx.measureText(displayText + '…').width > maxW) {
+        displayText = displayText.slice(0, -1);
+      }
+      if (displayText.length < text.length) displayText += '…';
+      ctx.fillText(displayText, textX, y);
+
+      y += ROW_H;
+    }
   }
 
-  // 하단
-  ctx.fillStyle = '#c17f24'; ctx.fillRect(60, S - 64, S - 120, 2);
+  // 하단 고정 바 + 텍스트 (항상 FOOTER_TOP 기준)
+  ctx.fillStyle = '#c17f24'; ctx.fillRect(60, FOOTER_TOP + 12, S - 120, 2);
   ctx.font = '24px -apple-system,sans-serif';
   ctx.fillStyle = 'rgba(193,127,36,0.38)';
   ctx.textAlign = 'center';
-  ctx.fillText('위스키 노트 앱으로 기록했습니다', S / 2, S - 44);
+  ctx.textBaseline = 'top';
+  ctx.fillText('위스키 노트 앱으로 기록했습니다', S / 2, FOOTER_TOP + 28);
 
   canvas.toBlob(blob => {
     const a = document.createElement('a');
