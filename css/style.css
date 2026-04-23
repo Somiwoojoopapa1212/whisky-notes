@@ -117,8 +117,8 @@ body {
 /* ── 위스키 그리드 ── */
 .whisky-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 12px;
 }
 
 .whisky-card {
@@ -127,39 +127,59 @@ body {
   border: 1px solid var(--border);
   overflow: hidden;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: stretch;
   transition: box-shadow 0.2s, transform 0.2s;
+  min-height: 86px;
 }
 .whisky-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,0.08); transform: translateY(-1px); }
 
-.whisky-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 14px 6px;
-}
-
-.whisky-card-body {
-  padding: 4px 14px 12px;
-  cursor: pointer;
-  flex: 1;
-}
-
-.whisky-card-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 14px;
-  border-top: 1px solid var(--border);
+/* 왼쪽 썸네일 */
+.card-thumb {
+  width: 80px;
+  min-width: 80px;
   background: var(--secondary);
-  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.footer-left { color: var(--text-muted); }
-.remaining { color: var(--primary-dark); font-weight: 500; }
-.whisky-price { font-weight: 600; color: var(--primary-dark); }
+.card-thumb-ph { font-size: 26px; opacity: 0.22; pointer-events: none; }
 
-.whisky-name { font-weight: 700; font-size: 15px; margin-bottom: 3px; }
-.whisky-meta { color: var(--text-muted); font-size: 12px; margin-bottom: 8px; min-height: 16px; }
+/* 오른쪽 정보 영역 */
+.card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 9px 12px 8px;
+  min-width: 0;
+  gap: 3px;
+  cursor: pointer;
+}
+.card-row-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 4px;
+}
+.card-row-bottom {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: auto;
+  padding-top: 4px;
+}
+
+.footer-left { color: var(--text-muted); font-size: 12px; }
+.remaining { color: var(--primary-dark); font-weight: 500; }
+.whisky-price { font-weight: 600; color: var(--primary-dark); font-size: 12px; margin-left: auto; }
+
+.whisky-name { font-weight: 700; font-size: 14px; line-height: 1.3; }
+.whisky-meta { color: var(--text-muted); font-size: 12px; min-height: 14px; }
 .whisky-tags { display: flex; flex-wrap: wrap; gap: 4px; }
 .tag {
   background: var(--primary-light);
@@ -853,7 +873,7 @@ body {
 
 /* ── 반응형 ── */
 @media (max-width: 900px) {
-  .whisky-grid { grid-template-columns: repeat(2, 1fr); }
+  .whisky-grid { grid-template-columns: 1fr; }
   .detail-info-grid { grid-template-columns: 1fr; }
   .detail-info-row { border-right: none !important; }
   .detail-info-row:nth-last-child(1) { border-bottom: none !important; }
@@ -1023,13 +1043,44 @@ body {
   flex-wrap: wrap;
 }
 
-/* ── 위스키 카드 이미지 ── */
+/* ── 위스키 카드 썸네일 이미지 ── */
 .whisky-card-img {
   width: 100%;
-  height: 140px;
+  height: 100%;
   object-fit: cover;
   display: none;
-  border-bottom: 1px solid var(--border);
+}
+
+/* ── 시음 노트 사진 ── */
+.tasting-img-zone {
+  width: 100%;
+  aspect-ratio: 16/9;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--secondary);
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 4px;
+}
+.tasting-img-ph { text-align: center; color: var(--text-muted); pointer-events: none; }
+.tasting-img-ph span { display: block; font-size: 28px; margin-bottom: 4px; }
+.tasting-img-ph small { font-size: 12px; }
+.tasting-img-preview {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: none;
+  border-radius: 8px;
+}
+.tasting-img-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-bottom: 8px;
 }
 
 /* ── 상세 모달 이미지 ── */

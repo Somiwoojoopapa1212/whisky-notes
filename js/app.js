@@ -36,6 +36,8 @@ let statsDateTo = '';
 // 이미지 관련 상태
 let _pendingImageDataUrl = null;
 let _deleteImageOnSave = false;
+let _pendingTastingImageDataUrl = null;
+let _deleteTastingImageOnSave = false;
 
 const STATUS_LABEL = { unopened: '미개봉', opened: '개봉중', finished: '완음' };
 const STATUS_CLASS = { unopened: 'status-unopened', opened: 'status-opened', finished: 'status-finished' };
@@ -181,38 +183,42 @@ function renderCollection() {
     const card = document.createElement('div');
     card.className = 'whisky-card';
     card.innerHTML = `
-      <img class="whisky-card-img" id="thumb-${w.id}" alt="" />
-      <div class="whisky-card-top">
-        <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
-        <div class="whisky-card-actions">
-          <button class="btn-icon-sm" title="수정" onclick="event.stopPropagation(); openEditWhiskyModal('${w.id}')">✏️</button>
-          <button class="btn-icon-sm" title="삭제" onclick="event.stopPropagation(); deleteWhisky('${w.id}')">🗑️</button>
-        </div>
+      <div class="card-thumb" onclick="openDetailModal('${w.id}')">
+        <img class="whisky-card-img" id="thumb-${w.id}" alt="" />
+        <span class="card-thumb-ph">🥃</span>
       </div>
-      <div class="whisky-card-body" onclick="openDetailModal('${w.id}')">
-        <div class="whisky-name">${w.name}</div>
-        <div class="whisky-meta">
-          ${[w.distillery, w.region].filter(Boolean).join(' · ')}
+      <div class="card-content" onclick="openDetailModal('${w.id}')">
+        <div class="card-row-top">
+          <div class="whisky-name">${w.name}</div>
+          <div class="whisky-card-actions" onclick="event.stopPropagation()">
+            <button class="btn-icon-sm" title="수정" onclick="openEditWhiskyModal('${w.id}')">✏️</button>
+            <button class="btn-icon-sm" title="삭제" onclick="deleteWhisky('${w.id}')">🗑️</button>
+          </div>
         </div>
+        <div class="whisky-meta">${[w.distillery, w.region].filter(Boolean).join(' · ')}</div>
         <div class="whisky-tags">
           ${w.type ? `<span class="tag">${w.type}</span>` : ''}
           ${w.age ? `<span class="tag">${w.age === 'NAS' ? 'NAS' : w.age + '년'}</span>` : ''}
           ${w.abv ? `<span class="tag">${w.abv}%</span>` : ''}
         </div>
-      </div>
-      <div class="whisky-card-footer">
-        <span class="footer-left">
-          📝 ${tastings.length}회 시음
-          ${w.status === 'opened' && remaining !== null ? `<span class="remaining">· 잔여 ≈${remaining.toFixed(0)}ml</span>` : ''}
-        </span>
-        ${w.purchasePrice ? `<span class="whisky-price">₩${parseInt(w.purchasePrice).toLocaleString()}</span>` : ''}
+        <div class="card-row-bottom">
+          <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
+          <span class="footer-left">📝 ${tastings.length}회
+            ${w.status === 'opened' && remaining !== null ? `<span class="remaining">· 잔여 ≈${remaining.toFixed(0)}ml</span>` : ''}
+          </span>
+          ${w.purchasePrice ? `<span class="whisky-price">₩${parseInt(w.purchasePrice).toLocaleString()}</span>` : ''}
+        </div>
       </div>
     `;
     grid.appendChild(card);
     ImageDB.get(w.id).then(img => {
       if (img) {
         const thumb = document.getElementById(`thumb-${w.id}`);
-        if (thumb) { thumb.src = img; thumb.style.display = 'block'; }
+        if (thumb) {
+          thumb.src = img;
+          thumb.style.display = 'block';
+          thumb.previousElementSibling && (thumb.previousElementSibling.style.display = 'none');
+        }
       }
     });
   });
@@ -295,6 +301,48 @@ function removeImage() {
   _pendingImageDataUrl = null;
   _deleteImageOnSave = true;
   clearImageUI();
+}
+
+// ── 시음 사진 ──
+function clearTastingImageUI() {
+  _pendingTastingImageDataUrl = null;
+  _deleteTastingImageOnSave = false;
+  const preview = document.getElementById('tasting-img-preview');
+  const ph = document.getElementById('tasting-img-ph');
+  const removeBtn = document.getElementById('tasting-img-remove-btn');
+  const fileInput = document.getElementById('tasting-img-file');
+  if (preview) { preview.src = ''; preview.style.display = 'none'; }
+  if (ph) ph.style.display = 'flex';
+  if (removeBtn) removeBtn.style.display = 'none';
+  if (fileInput) fileInput.value = '';
+}
+
+function _showTastingImagePreview(dataUrl) {
+  const preview = document.getElementById('tasting-img-preview');
+  const ph = document.getElementById('tasting-img-ph');
+  const removeBtn = document.getElementById('tasting-img-remove-btn');
+  if (preview) { preview.src = dataUrl; preview.style.display = 'block'; }
+  if (ph) ph.style.display = 'none';
+  if (removeBtn) removeBtn.style.display = 'inline-flex';
+}
+
+function handleTastingImageSelect(input) {
+  const file = input.files[0];
+  input.value = '';
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    _pendingTastingImageDataUrl = e.target.result;
+    _deleteTastingImageOnSave = false;
+    _showTastingImagePreview(e.target.result);
+  };
+  reader.readAsDataURL(file);
+}
+
+function removeTastingImage() {
+  _pendingTastingImageDataUrl = null;
+  _deleteTastingImageOnSave = true;
+  clearTastingImageUI();
 }
 
 async function saveWhisky() {
@@ -494,6 +542,7 @@ function openAddTastingModal() {
   editingTastingId = null;
   document.getElementById('modal-tasting-title').textContent = '시음 기록';
   clearTastingForm();
+  clearTastingImageUI();
   populateTastingWhiskySelect('');
   setVal('tasting-date', new Date().toISOString().split('T')[0]);
   openModal('modal-tasting');
@@ -531,6 +580,8 @@ function openEditTastingModal(id) {
   setSliderVal('tasting-score', 'val-total-score', t.score);
   setVal('tasting-notes', t.notes);
   showAutoFillHint(false);
+  clearTastingImageUI();
+  ImageDB.get('tasting_' + id).then(img => { if (img) _showTastingImagePreview(img); });
   openModal('modal-tasting');
 }
 
@@ -561,7 +612,7 @@ function clearTastingForm() {
   resetSlider('tasting-score', 'val-total-score');
 }
 
-function saveTasting() {
+async function saveTasting() {
   const selected = getVal('tasting-whisky-id');
   const isCustom = selected === '__custom__';
   const customWhiskeyName = isCustom ? getVal('tasting-custom-whisky').trim() : '';
@@ -591,12 +642,19 @@ function saveTasting() {
     notes: getVal('tasting-notes').trim(),
   };
 
+  let savedId;
   if (editingTastingId) {
     Storage.updateTasting(editingTastingId, data);
+    savedId = editingTastingId;
   } else {
-    Storage.addTasting(data);
+    const t = Storage.addTasting(data);
+    savedId = t.id;
     syncTastingToCloud(data, Storage.getWhiskies());
   }
+  if (_pendingTastingImageDataUrl) await ImageDB.save('tasting_' + savedId, _pendingTastingImageDataUrl);
+  else if (_deleteTastingImageOnSave) await ImageDB.delete('tasting_' + savedId);
+  _pendingTastingImageDataUrl = null;
+  _deleteTastingImageOnSave = false;
 
   closeModal('modal-tasting');
   if (currentPage === 'tasting') renderTastingList();
@@ -604,10 +662,11 @@ function saveTasting() {
   else if (currentPage === 'collection') renderCollection();
 }
 
-function deleteTasting(id, fromDetail) {
+async function deleteTasting(id, fromDetail) {
   if (!confirm('시음 노트를 삭제할까요?')) return;
   const t = Storage.getTastings().find(t => t.id === id);
   Storage.deleteTasting(id);
+  await ImageDB.delete('tasting_' + id);
   if (fromDetail && t && t.whiskeyId) openDetailModal(t.whiskeyId);
   else renderTastingList();
 }
@@ -935,10 +994,10 @@ async function _applyLabelResult(parsed) {
   showToast('라벨 인식 완료! 이름을 확인 후 필요시 수정해주세요.');
 }
 
-// ── 위스키 이름 자동완성 (Wikidata) ──
+// ── 증류소 자동완성 (Wikidata) ──
 let _acTimer = null;
 
-function onWhiskyNameInput(val) {
+function onDistilleryInput(val) {
   clearTimeout(_acTimer);
   hideAc();
   if (!val || val.trim().length < 2) return;
@@ -963,7 +1022,7 @@ async function fetchAcSuggestions(query) {
 }
 
 function showAc(results) {
-  const input = document.getElementById('whisky-name');
+  const input = document.getElementById('whisky-distillery');
   const list  = document.getElementById('whisky-autocomplete');
   if (!input || !list || results.length === 0) { hideAc(); return; }
 
@@ -1013,7 +1072,10 @@ function selectAc(idx) {
   const item = list._r?.[idx];
   if (!item) return;
 
-  setVal('whisky-name', item.label);
+  // 증류소명 입력 (Distillery 접미어 제거)
+  const distName = item.label.replace(/\s*distiller(y|ies)\s*/gi, '').trim();
+  setVal('whisky-distillery', distName || item.label);
+
   const desc = (item.description || '').toLowerCase();
   const autoFilled = [];
 
@@ -1040,14 +1102,9 @@ function selectAc(idx) {
     else if (desc.includes('grain'))         { setVal('whisky-type', '그레인');      autoFilled.push('종류'); }
   }
 
-  // 증류소명 (distillery 이름이 선택된 경우)
-  if (!getVal('whisky-distillery') && (desc.includes('distillery') || desc.includes('distilleries'))) {
-    const distName = item.label.replace(/\s*distiller(y|ies)\s*/gi, '').trim();
-    if (distName) { setVal('whisky-distillery', distName); autoFilled.push('증류소'); }
-  }
-
   hideAc();
-  if (autoFilled.length > 0) showToast(`${autoFilled.join(' · ')} 자동 입력됨 ✓`);
+  if (autoFilled.length > 0) showToast(`증류소 · ${autoFilled.join(' · ')} 자동 입력됨 ✓`);
+  else showToast('증류소 자동 입력됨 ✓');
 }
 
 // ── 사진 자르기 ──
