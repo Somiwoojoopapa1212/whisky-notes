@@ -721,6 +721,40 @@ body {
   padding-bottom: 10px;
   border-bottom: 1px solid var(--border);
 }
+/* ── 카운트 목록 (바 없음) ── */
+.count-list { display: flex; flex-direction: column; gap: 7px; }
+.count-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 12px; background: var(--secondary); border-radius: 8px; gap: 8px;
+}
+.count-label { font-size: 13px; color: var(--text); font-weight: 500; }
+.count-badge {
+  font-size: 12px; font-weight: 700; color: var(--primary-dark);
+  background: var(--primary-light); padding: 2px 9px; border-radius: 20px; flex-shrink: 0;
+}
+
+/* ── 점수 바 (100점 기준) ── */
+.score-bar-row { display: flex; align-items: center; gap: 10px; }
+.score-bar-label {
+  font-size: 13px; font-weight: 600; color: var(--text-muted);
+  width: 52px; flex-shrink: 0;
+}
+.score-bar-val {
+  font-size: 13px; font-weight: 700; color: var(--primary-dark);
+  min-width: 38px; text-align: right; flex-shrink: 0;
+}
+
+/* ── 커뮤니티 펼침 버튼 ── */
+.community-expand-btn {
+  width: 100%; margin-top: 6px; padding: 9px;
+  background: transparent; border: 1px dashed var(--border);
+  border-radius: 8px; font-size: 13px; font-weight: 600;
+  color: var(--text-muted); cursor: pointer; transition: all 0.15s;
+}
+.community-expand-btn:hover { background: var(--secondary); color: var(--primary-dark); }
+.whisky-extra { display: none; }
+.whisky-list-expanded .whisky-extra { display: flex; }
+
 .bar-chart { display: flex; flex-direction: column; gap: 9px; }
 .bar-row { display: flex; align-items: center; gap: 8px; }
 .bar-label {

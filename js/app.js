@@ -1190,7 +1190,7 @@ function renderStats() {
     const v = getEffectiveProp(t, 'region') || '미입력';
     regionCount[v] = (regionCount[v] || 0) + 1;
   });
-  renderBarChart('chart-region', regionCount, null);
+  renderCountList('chart-region', regionCount, null);
 
   // 종류별
   const typeCount = {};
@@ -1198,7 +1198,7 @@ function renderStats() {
     const v = getEffectiveProp(t, 'type') || '미입력';
     typeCount[v] = (typeCount[v] || 0) + 1;
   });
-  renderBarChart('chart-type', typeCount, null);
+  renderCountList('chart-type', typeCount, null);
 
   // 숙성연수별 (그룹)
   const ageCount = {};
@@ -1216,7 +1216,7 @@ function renderStats() {
     const v = ageGroup(getEffectiveProp(t, 'age'));
     ageCount[v] = (ageCount[v] || 0) + 1;
   });
-  renderBarChart('chart-age', ageCount, ageOrder);
+  renderCountList('chart-age', ageCount, ageOrder);
 
   // 도수별 (그룹)
   const abvCount = {};
@@ -1234,13 +1234,13 @@ function renderStats() {
     const v = abvGroup(getEffectiveProp(t, 'abv'));
     abvCount[v] = (abvCount[v] || 0) + 1;
   });
-  renderBarChart('chart-abv', abvCount, abvOrder);
+  renderCountList('chart-abv', abvCount, abvOrder);
 
-  // 점수 분석
+  // 점수 분석 (100점 기준 바)
   const scoreCategories = [
-    { label: '향 (Nose)', key: 'noseScore' },
-    { label: '맛 (Palate)', key: 'palateScore' },
-    { label: '피니시 (Finish)', key: 'finishScore' },
+    { label: '향', key: 'noseScore' },
+    { label: '맛', key: 'palateScore' },
+    { label: '피니시', key: 'finishScore' },
     { label: '종합', key: 'score' },
   ];
   const scoreMap = {};
@@ -1248,7 +1248,7 @@ function renderStats() {
     const vals = all.filter(t => t[key] !== null && t[key] !== undefined && t[key] !== '').map(t => parseInt(t[key]));
     if (vals.length) scoreMap[label] = Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
   });
-  renderBarChart('chart-scores', scoreMap, scoreCategories.map(c => c.label).filter(l => scoreMap[l]));
+  renderScoreChart('chart-scores', scoreMap, scoreCategories.map(c => c.label).filter(l => scoreMap[l]));
   renderTasteReport(all);
   renderValueRanking();
 }
@@ -1429,6 +1429,43 @@ function renderBarChart(containerId, countMap, order) {
       <span class="bar-count">${count}</span>
     </div>
   `).join('');
+}
+
+function renderCountList(containerId, countMap, order) {
+  const container = document.getElementById(containerId);
+  const entries = order
+    ? order.filter(k => countMap[k]).map(k => [k, countMap[k]])
+    : Object.entries(countMap).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) {
+    container.innerHTML = '<p class="empty-hint">데이터가 없습니다.</p>';
+    return;
+  }
+  container.innerHTML = '<div class="count-list">' +
+    entries.map(([label, count]) => `
+      <div class="count-row">
+        <span class="count-label">${label}</span>
+        <span class="count-badge">${count}회</span>
+      </div>`).join('') + '</div>';
+}
+
+function renderScoreChart(containerId, scoreMap, order) {
+  const container = document.getElementById(containerId);
+  const entries = order
+    ? order.filter(k => scoreMap[k] !== undefined).map(k => [k, scoreMap[k]])
+    : Object.entries(scoreMap).sort((a, b) => b[1] - a[1]);
+  if (!entries.length) {
+    container.innerHTML = '<p class="empty-hint">데이터가 없습니다.</p>';
+    return;
+  }
+  container.innerHTML = '<div style="display:flex;flex-direction:column;gap:12px">' +
+    entries.map(([label, score]) => `
+      <div class="score-bar-row">
+        <span class="score-bar-label">${label}</span>
+        <div class="bar-track">
+          <div class="bar-fill" style="width:${score}%"></div>
+        </div>
+        <span class="score-bar-val">${score}점</span>
+      </div>`).join('') + '</div>';
 }
 
 // ── 데이터 공유 동의 ──
@@ -1895,14 +1932,22 @@ function renderCommunityStats(tastings, content) {
     if (t.whiskyName) whiskyCount[t.whiskyName] = (whiskyCount[t.whiskyName] || 0) + 1;
   });
 
-  const topWhiskyKeys = Object.entries(whiskyCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k]) => k);
+  const topWhiskyKeys = Object.entries(whiskyCount).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([k]) => k);
 
-  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
-  const avgNose   = avg(tastings.filter(t => t.noseScore   != null && t.noseScore   !== '').map(t => parseFloat(t.noseScore)));
-  const avgPalate = avg(tastings.filter(t => t.palateScore != null && t.palateScore !== '').map(t => parseFloat(t.palateScore)));
-  const avgFinish = avg(tastings.filter(t => t.finishScore != null && t.finishScore !== '').map(t => parseFloat(t.finishScore)));
+  // 위스키별 평균 종합 점수 랭킹
+  const whiskyScoreMap = {};
+  tastings.forEach(t => {
+    if (t.whiskyName && t.score != null && t.score !== '') {
+      if (!whiskyScoreMap[t.whiskyName]) whiskyScoreMap[t.whiskyName] = [];
+      whiskyScoreMap[t.whiskyName].push(parseFloat(t.score));
+    }
+  });
+  const whiskyRanking = Object.entries(whiskyScoreMap)
+    .map(([name, sc]) => ({ name, avg: Math.round(sc.reduce((a,b)=>a+b,0)/sc.length), count: sc.length }))
+    .sort((a,b) => b.avg - a.avg || b.count - a.count)
+    .slice(0, 10);
 
-  // 이름 목록 (바 없음, 이름 + 횟수)
+  // 이름 목록 (바 없음)
   const makeNameList = (countMap, order) => {
     const entries = order
       ? order.filter(k => countMap[k]).map(k => [k, countMap[k]])
@@ -1917,26 +1962,33 @@ function renderCommunityStats(tastings, content) {
         </div>`).join('') + '</div>';
   };
 
-  // 점수 차트 (100점 기준 바)
-  const makeScoreChart = (items) => {
-    if (!items.length) return '';
-    return '<div class="community-score-chart">' +
-      items.map(([label, score]) => `
-        <div class="community-score-row">
-          <span class="community-score-label">${label}</span>
-          <div class="community-score-track">
-            <div class="community-score-fill" style="width:${score}%"></div>
-          </div>
-          <span class="community-score-val">${score}점</span>
-        </div>`).join('') + '</div>';
+  // 인기 위스키 Top10 (기본 5, 펼침으로 10까지)
+  const makeExpandableWhiskyList = (keys) => {
+    if (!keys.length) return '<p class="empty-hint">데이터 없음</p>';
+    const rows = keys.map((k, i) => `
+      <div class="community-name-row${i >= 5 ? ' whisky-extra' : ''}">
+        <span class="community-name-rank">${i + 1}</span>
+        <span class="community-name-text">${k}</span>
+        <span class="community-name-count">${whiskyCount[k]}회</span>
+      </div>`).join('');
+    const hasExtra = keys.length > 5;
+    return `<div class="community-name-list" id="community-whisky-list">
+      ${rows}
+      ${hasExtra ? `<button class="community-expand-btn" id="whisky-expand-btn" onclick="toggleCommunityWhiskyList()">▼ 더 보기 (${keys.length - 5}개)</button>` : ''}
+    </div>`;
   };
 
-  const scoreItems = [
-    avgNose   !== null ? ['향',    avgNose]   : null,
-    avgPalate !== null ? ['맛',    avgPalate] : null,
-    avgFinish !== null ? ['피니시', avgFinish] : null,
-    avgScore  !== null ? ['종합',  avgScore]  : null,
-  ].filter(Boolean);
+  // 위스키 점수 랭킹
+  const makeWhiskyScoreList = (ranking) => {
+    if (!ranking.length) return '<p class="empty-hint">데이터 없음</p>';
+    return '<div class="community-name-list">' +
+      ranking.map((w, i) => `
+        <div class="community-name-row">
+          <span class="community-name-rank">${i + 1}</span>
+          <span class="community-name-text">${w.name}</span>
+          <span class="community-name-count">${w.avg}점</span>
+        </div>`).join('') + '</div>';
+  };
 
   content.innerHTML = `
     <div class="community-header">
@@ -1954,7 +2006,7 @@ function renderCommunityStats(tastings, content) {
       </div>
     </div>
 
-    ${topWhiskyKeys.length ? `<div class="community-section-title">🏆 인기 위스키 TOP ${topWhiskyKeys.length}</div>${makeNameList(whiskyCount, topWhiskyKeys)}` : ''}
+    ${topWhiskyKeys.length ? `<div class="community-section-title">🏆 인기 위스키 TOP ${Math.min(topWhiskyKeys.length, 10)}</div>${makeExpandableWhiskyList(topWhiskyKeys)}` : ''}
 
     <div class="community-section-title">📍 지역별 분포</div>
     ${makeNameList(regionCount, null)}
@@ -1962,12 +2014,21 @@ function renderCommunityStats(tastings, content) {
     <div class="community-section-title">🥃 종류별 분포</div>
     ${makeNameList(typeCount, null)}
 
-    ${scoreItems.length ? `<div class="community-section-title">⭐ 평균 점수 분석</div>${makeScoreChart(scoreItems)}` : ''}
+    ${whiskyRanking.length ? `<div class="community-section-title">⭐ 위스키 점수 랭킹 (종합점수 기준)</div>${makeWhiskyScoreList(whiskyRanking)}` : ''}
 
     <p style="font-size:11px;color:var(--text-muted);margin-top:24px;text-align:center;line-height:1.6;">
       💡 데이터 공유에 동의한 사용자들의 익명 시음 기록입니다
     </p>
   `;
+}
+
+function toggleCommunityWhiskyList() {
+  const list = document.getElementById('community-whisky-list');
+  const btn  = document.getElementById('whisky-expand-btn');
+  if (!list || !btn) return;
+  const expanded = list.classList.toggle('whisky-list-expanded');
+  const extraCount = list.querySelectorAll('.whisky-extra').length;
+  btn.textContent = expanded ? '▲ 접기' : `▼ 더 보기 (${extraCount}개)`;
 }
 
 function showToast(msg) {
