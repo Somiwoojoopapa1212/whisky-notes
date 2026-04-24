@@ -204,7 +204,14 @@
             <h1 class="page-title">시음 통계</h1>
             <p class="page-subtitle" id="stats-subtitle"></p>
           </div>
+          <div class="stats-view-toggle">
+            <button class="stats-view-btn active" data-view="mine" onclick="showStatsView('mine')">내 통계</button>
+            <button class="stats-view-btn" data-view="community" onclick="showStatsView('community')">다른 사람 통계</button>
+          </div>
         </div>
+
+        <!-- 내 통계 -->
+        <div id="stats-view-mine">
 
         <div class="stats-period-bar">
           <button class="stats-tab active" data-period="all">전체</button>
@@ -258,6 +265,16 @@
           <h3 class="stats-card-title">💰 가성비 랭킹</h3>
           <div id="value-ranking-section"></div>
         </div>
+
+        </div><!-- /stats-view-mine -->
+
+        <!-- 다른 사람 통계 -->
+        <div id="stats-view-community" style="display:none">
+          <div id="community-inline-content">
+            <p class="loading-hint">⏳ 불러오는 중...</p>
+          </div>
+        </div>
+
       </div>
 
       <!-- 위시리스트 페이지 -->

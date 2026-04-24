@@ -1124,6 +1124,101 @@ body {
 }
 
 /* ── 커뮤니티 통계 모달 ── */
+/* ── 통계 뷰 토글 ── */
+.stats-view-toggle {
+  display: flex;
+  gap: 2px;
+  background: var(--secondary);
+  padding: 3px;
+  border-radius: 9px;
+  flex-shrink: 0;
+}
+.stats-view-btn {
+  padding: 7px 16px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.stats-view-btn:hover { color: var(--text); }
+.stats-view-btn.active {
+  background: var(--card-bg);
+  color: var(--text);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* ── 커뮤니티 이름 목록 (바 없음) ── */
+.community-name-list { display: flex; flex-direction: column; gap: 8px; }
+.community-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: var(--secondary);
+  border-radius: 8px;
+}
+.community-name-rank {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--primary);
+  min-width: 20px;
+  text-align: center;
+  flex-shrink: 0;
+}
+.community-name-text {
+  flex: 1;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text);
+  line-height: 1.4;
+}
+.community-name-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  background: var(--primary-light);
+  padding: 2px 8px;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+
+/* ── 커뮤니티 점수 차트 (100점 기준) ── */
+.community-score-chart { display: flex; flex-direction: column; gap: 12px; }
+.community-score-row { display: flex; align-items: center; gap: 10px; }
+.community-score-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+  width: 42px;
+  flex-shrink: 0;
+}
+.community-score-track {
+  flex: 1;
+  height: 10px;
+  background: var(--border);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.community-score-fill {
+  height: 100%;
+  background: var(--primary);
+  border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.community-score-val {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--primary-dark);
+  min-width: 38px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
 .community-header {
   display: flex;
   gap: 10px;

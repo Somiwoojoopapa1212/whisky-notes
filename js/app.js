@@ -32,6 +32,7 @@ let editingTastingId = null;
 let statsPeriod = 'all';
 let statsDateFrom = '';
 let statsDateTo = '';
+let _communityLoaded = false;
 
 // 이미지 관련 상태
 let _pendingImageDataUrl = null;
@@ -450,7 +451,11 @@ function renderPage(page) {
   document.getElementById(`page-${page}`).classList.add('active');
   if (page === 'collection') renderCollection();
   else if (page === 'tasting') renderTastingPage();
-  else if (page === 'stats') renderStats();
+  else if (page === 'stats') {
+    _communityLoaded = false;
+    showStatsView('mine');
+    renderStats();
+  }
   else if (page === 'wishlist') renderWishlist();
 }
 
@@ -1835,22 +1840,40 @@ function sendInstagramFeedback() {
 }
 
 // ── 커뮤니티 통계 (다른사람 후기) ──
-async function openCommunityStats() {
-  openModal('modal-community');
-  const content = document.getElementById('community-content');
+function showStatsView(view) {
+  document.querySelectorAll('.stats-view-btn').forEach(b => b.classList.toggle('active', b.dataset.view === view));
+  document.getElementById('stats-view-mine').style.display      = view === 'mine'      ? '' : 'none';
+  document.getElementById('stats-view-community').style.display = view === 'community' ? '' : 'none';
+  if (view === 'community' && !_communityLoaded) {
+    _communityLoaded = true;
+    _loadCommunityInline();
+  }
+}
+
+async function _loadCommunityInline() {
+  const content = document.getElementById('community-inline-content');
   content.innerHTML = '<p class="loading-hint">⏳ 데이터를 불러오는 중...</p>';
   try {
     await _authReady;
     const snapshot = await db.collection('tastings').limit(1000).get();
     const tastings = snapshot.docs.map(doc => doc.data());
-    renderCommunityStats(tastings);
+    renderCommunityStats(tastings, content);
   } catch (err) {
     content.innerHTML = '<p class="loading-hint">데이터를 불러올 수 없습니다.<br>인터넷 연결을 확인해주세요.</p>';
   }
 }
 
-function renderCommunityStats(tastings) {
-  const content = document.getElementById('community-content');
+async function openCommunityStats() {
+  renderPage('stats');
+  document.querySelectorAll('[data-page="stats"]').forEach(i => {
+    document.querySelectorAll('.nav-item,.bottom-nav-item').forEach(el => el.classList.remove('active'));
+    i.classList.add('active');
+  });
+  showStatsView('community');
+}
+
+function renderCommunityStats(tastings, content) {
+  if (!content) content = document.getElementById('community-inline-content');
   if (tastings.length === 0) {
     content.innerHTML = '<p class="loading-hint">아직 공유된 시음 기록이 없습니다.<br>데이터 공유에 동의하면 통계에 기여됩니다 🥃</p>';
     return;
@@ -1874,33 +1897,46 @@ function renderCommunityStats(tastings) {
 
   const topWhiskyKeys = Object.entries(whiskyCount).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([k]) => k);
 
-  const noseScores = tastings.filter(t => t.noseScore !== null && t.noseScore !== undefined && t.noseScore !== '').map(t => parseFloat(t.noseScore));
-  const palateScores = tastings.filter(t => t.palateScore !== null && t.palateScore !== undefined && t.palateScore !== '').map(t => parseFloat(t.palateScore));
-  const finishScores = tastings.filter(t => t.finishScore !== null && t.finishScore !== undefined && t.finishScore !== '').map(t => parseFloat(t.finishScore));
-  const avgNose = noseScores.length ? Math.round(noseScores.reduce((a,b)=>a+b,0)/noseScores.length) : null;
-  const avgPalate = palateScores.length ? Math.round(palateScores.reduce((a,b)=>a+b,0)/palateScores.length) : null;
-  const avgFinish = finishScores.length ? Math.round(finishScores.reduce((a,b)=>a+b,0)/finishScores.length) : null;
+  const avg = arr => arr.length ? Math.round(arr.reduce((a,b)=>a+b,0)/arr.length) : null;
+  const avgNose   = avg(tastings.filter(t => t.noseScore   != null && t.noseScore   !== '').map(t => parseFloat(t.noseScore)));
+  const avgPalate = avg(tastings.filter(t => t.palateScore != null && t.palateScore !== '').map(t => parseFloat(t.palateScore)));
+  const avgFinish = avg(tastings.filter(t => t.finishScore != null && t.finishScore !== '').map(t => parseFloat(t.finishScore)));
 
-  const makeBarChart = (countMap, order) => {
+  // 이름 목록 (바 없음, 이름 + 횟수)
+  const makeNameList = (countMap, order) => {
     const entries = order
       ? order.filter(k => countMap[k]).map(k => [k, countMap[k]])
       : Object.entries(countMap).sort((a, b) => b[1] - a[1]).slice(0, 8);
-    const max = Math.max(...entries.map(([, v]) => v), 1);
     if (entries.length === 0) return '<p class="empty-hint">데이터 없음</p>';
-    return '<div class="bar-chart">' + entries.map(([label, count]) => `
-      <div class="bar-row">
-        <span class="bar-label" title="${label}">${label}</span>
-        <div class="bar-track"><div class="bar-fill" style="width:${(count / max * 100).toFixed(1)}%"></div></div>
-        <span class="bar-count">${count}</span>
-      </div>`).join('') + '</div>';
+    return '<div class="community-name-list">' +
+      entries.map(([label, count], i) => `
+        <div class="community-name-row">
+          <span class="community-name-rank">${i + 1}</span>
+          <span class="community-name-text">${label}</span>
+          <span class="community-name-count">${count}회</span>
+        </div>`).join('') + '</div>';
   };
 
-  const scoreMap = {};
-  if (avgNose) scoreMap['향 (Nose)'] = avgNose;
-  if (avgPalate) scoreMap['맛 (Palate)'] = avgPalate;
-  if (avgFinish) scoreMap['피니시 (Finish)'] = avgFinish;
-  if (avgScore) scoreMap['종합'] = avgScore;
-  const scoreOrder = ['향 (Nose)', '맛 (Palate)', '피니시 (Finish)', '종합'].filter(k => scoreMap[k]);
+  // 점수 차트 (100점 기준 바)
+  const makeScoreChart = (items) => {
+    if (!items.length) return '';
+    return '<div class="community-score-chart">' +
+      items.map(([label, score]) => `
+        <div class="community-score-row">
+          <span class="community-score-label">${label}</span>
+          <div class="community-score-track">
+            <div class="community-score-fill" style="width:${score}%"></div>
+          </div>
+          <span class="community-score-val">${score}점</span>
+        </div>`).join('') + '</div>';
+  };
+
+  const scoreItems = [
+    avgNose   !== null ? ['향',    avgNose]   : null,
+    avgPalate !== null ? ['맛',    avgPalate] : null,
+    avgFinish !== null ? ['피니시', avgFinish] : null,
+    avgScore  !== null ? ['종합',  avgScore]  : null,
+  ].filter(Boolean);
 
   content.innerHTML = `
     <div class="community-header">
@@ -1918,15 +1954,15 @@ function renderCommunityStats(tastings) {
       </div>
     </div>
 
-    ${topWhiskyKeys.length ? `<div class="community-section-title">🏆 인기 위스키 TOP ${topWhiskyKeys.length}</div>${makeBarChart(whiskyCount, topWhiskyKeys)}` : ''}
+    ${topWhiskyKeys.length ? `<div class="community-section-title">🏆 인기 위스키 TOP ${topWhiskyKeys.length}</div>${makeNameList(whiskyCount, topWhiskyKeys)}` : ''}
 
     <div class="community-section-title">📍 지역별 분포</div>
-    ${makeBarChart(regionCount, null)}
+    ${makeNameList(regionCount, null)}
 
     <div class="community-section-title">🥃 종류별 분포</div>
-    ${makeBarChart(typeCount, null)}
+    ${makeNameList(typeCount, null)}
 
-    ${scoreOrder.length ? `<div class="community-section-title">⭐ 평균 점수 분석</div>${makeBarChart(scoreMap, scoreOrder)}` : ''}
+    ${scoreItems.length ? `<div class="community-section-title">⭐ 평균 점수 분석</div>${makeScoreChart(scoreItems)}` : ''}
 
     <p style="font-size:11px;color:var(--text-muted);margin-top:24px;text-align:center;line-height:1.6;">
       💡 데이터 공유에 동의한 사용자들의 익명 시음 기록입니다
