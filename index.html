@@ -81,40 +81,70 @@
       </div>
       <ul class="nav-menu">
         <li class="nav-item active" data-page="collection">
-          <span class="nav-icon">📦</span>
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg">
+              <rect x="9" y="1.5" width="6" height="2.5" rx="1.2"/>
+              <path d="M9 4L8 6.5C7.3 8.2 7 10 7 12v8a1.5 1.5 0 001.5 1.5h7A1.5 1.5 0 0017 20v-8c0-2-.3-3.8-1-5.5L15 4"/>
+              <line x1="7.5" y1="15.5" x2="16.5" y2="15.5"/>
+            </svg>
+          </span>
           <span>컬렉션</span>
         </li>
         <li class="nav-item" data-page="tasting">
-          <span class="nav-icon">📝</span>
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg">
+              <path d="M7.5 3.5h9L15 11c-.5 2.5-1.5 4.5-3 4.5S9.5 13.5 9 11L7.5 3.5z"/>
+              <line x1="12" y1="15.5" x2="12" y2="20.5"/>
+              <line x1="9" y1="20.5" x2="15" y2="20.5"/>
+            </svg>
+          </span>
           <span>시음 노트</span>
         </li>
         <li class="nav-item" data-page="stats">
-          <span class="nav-icon">📊</span>
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg">
+              <line x1="3" y1="20" x2="21" y2="20"/>
+              <rect x="4" y="12" width="4" height="8" rx="1"/>
+              <rect x="10" y="6" width="4" height="14" rx="1"/>
+              <rect x="16" y="9" width="4" height="11" rx="1"/>
+            </svg>
+          </span>
           <span>통계</span>
         </li>
         <li class="nav-item" data-page="wishlist">
-          <span class="nav-icon">🔖</span>
+          <span class="nav-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg">
+              <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+              <circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/>
+            </svg>
+          </span>
           <span>위시리스트</span>
         </li>
       </ul>
       <div class="sidebar-footer">
         <button class="install-btn" id="install-btn" onclick="installApp()" style="display:none">
-          <span>📲</span><span>앱 설치</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M12 16l-4-4h3V4h2v8h3l-4 4z"/><path d="M4 20h16"/></svg>
+          <span>앱 설치</span>
         </button>
         <button class="feedback-btn" onclick="openFeedbackModal()">
-          <span>💬</span><span>피드백 보내기</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          <span>피드백 보내기</span>
         </button>
         <button class="feedback-btn" onclick="openSettingsModal()">
-          <span>⚙️</span><span>설정</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+          <span>설정</span>
         </button>
         <button class="feedback-btn" onclick="exportData()">
-          <span>📤</span><span>데이터 내보내기</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          <span>데이터 내보내기</span>
         </button>
         <button class="feedback-btn" onclick="openImportModal()">
-          <span>📥</span><span>데이터 가져오기</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          <span>데이터 가져오기</span>
         </button>
         <button class="reset-btn" onclick="resetAllData()">
-          <span>🗑️</span><span>전체 데이터 초기화</span>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
+          <span>전체 데이터 초기화</span>
         </button>
       </div>
     </nav>
@@ -523,7 +553,7 @@
                 <div class="flavor-row"><span class="fl-emoji">🔥</span><span class="fl-lbl">스모키</span><input type="range" id="fl-smoky"  min="0" max="5" value="0" step="1" oninput="updateFlavorPreview()"><span class="fl-val" id="fv-smoky">0</span></div>
                 <div class="flavor-row"><span class="fl-emoji">🌾</span><span class="fl-lbl">곡물</span><input type="range" id="fl-grainy" min="0" max="5" value="0" step="1" oninput="updateFlavorPreview()"><span class="fl-val" id="fv-grainy">0</span></div>
               </div>
-              <canvas id="flavor-preview-canvas" width="160" height="160"></canvas>
+              <canvas id="flavor-preview-canvas" width="200" height="200"></canvas>
             </div>
           </div>
           <div class="form-group form-col-2">
@@ -556,23 +586,53 @@
   <!-- 모바일 하단 네비게이션 -->
   <nav class="bottom-nav">
     <button class="bottom-nav-item active" data-page="collection">
-      <span class="bottom-nav-icon">📦</span>
+      <span class="bottom-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-bottom">
+          <rect x="9" y="1.5" width="6" height="2.5" rx="1.2"/>
+          <path d="M9 4L8 6.5C7.3 8.2 7 10 7 12v8a1.5 1.5 0 001.5 1.5h7A1.5 1.5 0 0017 20v-8c0-2-.3-3.8-1-5.5L15 4"/>
+          <line x1="7.5" y1="15.5" x2="16.5" y2="15.5"/>
+        </svg>
+      </span>
       <span class="bottom-nav-label">컬렉션</span>
     </button>
     <button class="bottom-nav-item" data-page="tasting">
-      <span class="bottom-nav-icon">📝</span>
+      <span class="bottom-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-bottom">
+          <path d="M7.5 3.5h9L15 11c-.5 2.5-1.5 4.5-3 4.5S9.5 13.5 9 11L7.5 3.5z"/>
+          <line x1="12" y1="15.5" x2="12" y2="20.5"/>
+          <line x1="9" y1="20.5" x2="15" y2="20.5"/>
+        </svg>
+      </span>
       <span class="bottom-nav-label">시음 노트</span>
     </button>
     <button class="bottom-nav-item" data-page="stats">
-      <span class="bottom-nav-icon">📊</span>
+      <span class="bottom-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-bottom">
+          <line x1="3" y1="20" x2="21" y2="20"/>
+          <rect x="4" y="12" width="4" height="8" rx="1"/>
+          <rect x="10" y="6" width="4" height="14" rx="1"/>
+          <rect x="16" y="9" width="4" height="11" rx="1"/>
+        </svg>
+      </span>
       <span class="bottom-nav-label">통계</span>
     </button>
     <button class="bottom-nav-item" data-page="wishlist">
-      <span class="bottom-nav-icon">🔖</span>
+      <span class="bottom-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="nav-svg-bottom">
+          <path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/>
+          <circle cx="7" cy="7" r="1" fill="currentColor" stroke="none"/>
+        </svg>
+      </span>
       <span class="bottom-nav-label">위시리스트</span>
     </button>
     <button class="bottom-nav-item" onclick="openMoreMenu()">
-      <span class="bottom-nav-icon">☰</span>
+      <span class="bottom-nav-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" class="nav-svg-bottom">
+          <line x1="4" y1="7" x2="20" y2="7"/>
+          <line x1="4" y1="12" x2="20" y2="12"/>
+          <line x1="4" y1="17" x2="20" y2="17"/>
+        </svg>
+      </span>
       <span class="bottom-nav-label">더보기</span>
     </button>
   </nav>
@@ -582,21 +642,27 @@
     <div class="more-menu-panel" onclick="event.stopPropagation()">
       <div class="more-menu-handle"></div>
       <button class="more-menu-item" onclick="closeMoreMenu(); openCommunityStats()">
-        <span class="more-menu-icon">👥</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">다른 사람 후기</div>
           <div class="more-menu-desc">위스키 시음 통계 보기</div>
         </div>
       </button>
       <button class="more-menu-item" onclick="closeMoreMenu(); openFeedbackModal()">
-        <span class="more-menu-icon">💬</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">피드백하기</div>
           <div class="more-menu-desc">불편사항 및 개선 요청</div>
         </div>
       </button>
       <button class="more-menu-item" onclick="closeMoreMenu(); openSettingsModal()">
-        <span class="more-menu-icon">⚙️</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">설정</div>
           <div class="more-menu-desc">Vision API 키 등 앱 설정</div>
@@ -604,14 +670,18 @@
       </button>
       <div class="more-menu-divider"></div>
       <button class="more-menu-item" onclick="closeMoreMenu(); exportData()">
-        <span class="more-menu-icon">📤</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">데이터 내보내기</div>
           <div class="more-menu-desc">전체 데이터를 JSON 파일로 저장</div>
         </div>
       </button>
       <button class="more-menu-item" onclick="closeMoreMenu(); openImportModal()">
-        <span class="more-menu-icon">📥</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">데이터 가져오기</div>
           <div class="more-menu-desc">JSON 파일에서 데이터 복원</div>
@@ -619,7 +689,9 @@
       </button>
       <div class="more-menu-divider"></div>
       <button class="more-menu-item danger" onclick="closeMoreMenu(); resetAllData()">
-        <span class="more-menu-icon">🗑️</span>
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+        </span>
         <div>
           <div class="more-menu-label">초기화하기</div>
           <div class="more-menu-desc">모든 데이터 삭제</div>

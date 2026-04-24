@@ -142,7 +142,7 @@ function updateFlavorPreview() {
     if (el && ve) ve.textContent = el.value;
   });
   const c = document.getElementById('flavor-preview-canvas');
-  if (c) drawRadarChart(c, getFlavorData(), { padding: 30, fontSize: 11, labelPad: 18 });
+  if (c) drawRadarChart(c, getFlavorData(), { padding: 38, fontSize: 11, labelPad: 20 });
 }
 
 // ── 공유 카드 생성 ──
@@ -895,7 +895,7 @@ function renderTastingList() {
       </div>
       ${hasDetail ? `
       <div class="tasting-card-detail" id="tasting-expand-${t.id}" style="display:none">
-        ${hasFlavors ? `<div class="tc-radar-wrap"><canvas id="tc-radar-${t.id}" width="140" height="140"></canvas></div>` : ''}
+        ${hasFlavors ? `<div class="tc-radar-wrap"><canvas id="tc-radar-${t.id}" width="180" height="180"></canvas></div>` : ''}
         ${t.nose   ? `<div class="tc-note-row"><span class="tasting-label">향</span><span class="tc-note-text">${t.nose}</span></div>` : ''}
         ${t.palate ? `<div class="tc-note-row"><span class="tasting-label">맛</span><span class="tc-note-text">${t.palate}</span></div>` : ''}
         ${t.finish ? `<div class="tc-note-row"><span class="tasting-label">피니시</span><span class="tc-note-text">${t.finish}</span></div>` : ''}
@@ -942,7 +942,7 @@ function toggleTastingCard(id) {
     if (t?.flavors && Object.values(t.flavors).some(v => v > 0)) {
       const c = document.getElementById(`tc-radar-${id}`);
       if (c && !c.dataset.rendered) {
-        drawRadarChart(c, t.flavors, { padding: 22, fontSize: 11, labelPad: 16, lineWidth: 1.5, dotRadius: 3 });
+        drawRadarChart(c, t.flavors, { padding: 28, fontSize: 11, labelPad: 18, lineWidth: 1.5, dotRadius: 3 });
         c.dataset.rendered = 'true';
       }
     }
