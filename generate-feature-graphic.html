@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>위스키 노트 그래픽 이미지 생성기</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  body { background:#111; color:#f5c842; font-family:'Noto Sans KR',sans-serif; padding:32px; text-align:center; }
+  h2 { margin-bottom:8px; }
+  p  { color:#888; font-size:14px; margin-bottom:24px; }
+  button { margin:8px; padding:12px 28px; background:#c17f24; color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:15px; font-family:inherit; }
+  button:hover { background:#d48e2a; }
+  canvas { border:2px solid #333; display:block; margin:24px auto; max-width:100%; }
+</style>
+</head>
+<body>
+<h2>🥃 위스키 노트 — 그래픽 이미지 생성기</h2>
+<p>아래 버튼을 클릭하면 1024×500 PNG 파일이 다운로드됩니다.</p>
+<button onclick="download()">⬇️ 그래픽 이미지 다운로드 (1024×500)</button>
+<br>
+<canvas id="c" width="1024" height="500"></canvas>
+
+<script>
+const FONT = "'Noto Sans KR', -apple-system, sans-serif";
+
+function draw() {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  const W = 1024, H = 500;
+
+  // ── 배경 ──
+  const bg = ctx.createRadialGradient(300, 250, 0, 300, 250, 700);
+  bg.addColorStop(0, '#2e1200');
+  bg.addColorStop(0.6, '#1a0a00');
+  bg.addColorStop(1, '#0a0300');
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, W, H);
+
+  // ── 장식 원 ──
+  [[150, 120, 220, 0.07], [900, 380, 180, 0.05], [600, 500, 120, 0.04]].forEach(([x,y,r,a]) => {
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(193,127,36,${a})`; ctx.fill();
+  });
+
+  // ── 구분선 ──
+  ctx.beginPath(); ctx.moveTo(500, 50); ctx.lineTo(500, 450);
+  ctx.strokeStyle = 'rgba(193,127,36,0.25)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // ── 왼쪽: 앱 정보 ──
+  // 아이콘 배경
+  ctx.beginPath(); ctx.arc(130, 155, 62, 0, Math.PI*2);
+  const iconBg = ctx.createRadialGradient(130,155,0,130,155,62);
+  iconBg.addColorStop(0,'rgba(193,127,36,0.35)');
+  iconBg.addColorStop(1,'rgba(193,127,36,0.05)');
+  ctx.fillStyle = iconBg; ctx.fill();
+
+  // 이모지
+  ctx.font = '68px serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🥃', 130, 175);
+
+  // 앱 이름
+  ctx.textAlign = 'left';
+  ctx.font = `900 58px ${FONT}`;
+  ctx.fillStyle = '#f5c842';
+  ctx.fillText('위스키 노트', 70, 265);
+
+  // 영문명
+  ctx.font = `400 20px ${FONT}`;
+  ctx.fillStyle = 'rgba(193,127,36,0.7)';
+  ctx.fillText('Whisky Notes', 72, 298);
+
+  // 구분 선
+  ctx.beginPath(); ctx.moveTo(72, 318); ctx.lineTo(420, 318);
+  ctx.strokeStyle = 'rgba(193,127,36,0.3)'; ctx.lineWidth = 1; ctx.stroke();
+
+  // 슬로건
+  ctx.font = `400 19px ${FONT}`;
+  ctx.fillStyle = 'rgba(255,255,255,0.55)';
+  ctx.fillText('나만의 위스키 컬렉션과 시음 기록을', 72, 348);
+  ctx.fillText('한 앱에서 관리하세요.', 72, 374);
+
+  // ── 오른쪽: 기능 목록 ──
+  const features = [
+    ['📦', '컬렉션 관리', '미개봉·개봉중·완음 상태 추적'],
+    ['📝', '시음 노트', '향·맛·피니시 점수 상세 기록'],
+    ['🎯', '향미 휠', '6축 레이더 차트 시각화'],
+    ['📊', '통계 & 랭킹', '취향 분석·가성비 등급 자동 계산'],
+  ];
+
+  let fy = 72;
+  features.forEach(([emoji, title, desc]) => {
+    // 아이콘 배경
+    ctx.beginPath(); ctx.arc(548, fy+22, 22, 0, Math.PI*2);
+    ctx.fillStyle = 'rgba(193,127,36,0.15)'; ctx.fill();
+
+    ctx.font = '22px serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(emoji, 548, fy+30);
+
+    ctx.textAlign = 'left';
+    ctx.font = `700 21px ${FONT}`;
+    ctx.fillStyle = '#f5c842';
+    ctx.fillText(title, 584, fy+22);
+
+    ctx.font = `400 15px ${FONT}`;
+    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.fillText(desc, 584, fy+44);
+
+    // 항목 구분선
+    if (fy < 350) {
+      ctx.beginPath(); ctx.moveTo(524, fy+68); ctx.lineTo(980, fy+68);
+      ctx.strokeStyle='rgba(193,127,36,0.12)'; ctx.lineWidth=1; ctx.stroke();
+    }
+    fy += 88;
+  });
+
+  // ── 하단 워터마크 ──
+  ctx.font = `400 13px ${FONT}`;
+  ctx.fillStyle = 'rgba(193,127,36,0.35)';
+  ctx.textAlign = 'right';
+  ctx.fillText('somiwoojoopapa1212.github.io/whisky-notes', W-24, H-18);
+}
+
+function download() {
+  document.fonts.ready.then(() => {
+    draw();
+    const a = document.createElement('a');
+    a.download = 'whisky-notes-feature-graphic.png';
+    a.href = document.getElementById('c').toDataURL('image/png');
+    a.click();
+  });
+}
+
+document.fonts.ready.then(draw);
+</script>
+</body>
+</html>
