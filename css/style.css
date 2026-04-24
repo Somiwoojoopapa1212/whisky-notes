@@ -1432,11 +1432,10 @@ body {
 /* ── 향미 프로필 슬라이더 ── */
 .flavor-wrap {
   display: flex;
-  gap: 14px;
-  align-items: center;
+  flex-direction: column;
+  gap: 12px;
 }
 .flavor-sliders {
-  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -1476,7 +1475,7 @@ body {
   flex-shrink: 0;
 }
 #flavor-preview-canvas {
-  flex-shrink: 0;
+  align-self: center;
   border-radius: 50%;
   background: var(--secondary);
 }
