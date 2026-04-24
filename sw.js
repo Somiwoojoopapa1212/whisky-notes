@@ -1,4 +1,4 @@
-const CACHE_NAME = 'whisky-notes-v10';
+const CACHE_NAME = 'whisky-notes-v11';
 const ASSETS = [
   './',
   './index.html',
