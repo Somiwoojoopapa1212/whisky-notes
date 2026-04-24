@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>위스키 노트 · 업데이트 노트</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;600;700;900&display=swap');
+
+  :root {
+    --amber: #c17f24;
+    --amber-dark: #9a6318;
+    --amber-light: #f5c842;
+    --amber-dim: rgba(193,127,36,0.12);
+    --dark: #1a0a00;
+    --text: #2d1f0e;
+    --text-muted: #7a6a5a;
+    --bg: #fdf8f2;
+    --card: #ffffff;
+    --border: #e8d5b5;
+    --new: #16a34a;
+    --new-bg: #f0fdf4;
+    --improve: #2563eb;
+    --improve-bg: #eff6ff;
+    --fix: #dc2626;
+    --fix-bg: #fef2f2;
+    --design: #7c3aed;
+    --design-bg: #faf5ff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Noto Sans KR', -apple-system, sans-serif; background: var(--bg); color: var(--text); font-size: 15px; line-height: 1.75; }
+
+  @media print {
+    body { font-size: 13px; background: white; }
+    .no-print { display: none !important; }
+    .hero { min-height: auto; padding: 40px; }
+  }
+
+  /* ── 히어로 ── */
+  .hero {
+    background: linear-gradient(150deg, #0f0500 0%, #1e0c00 55%, #2a1400 100%);
+    color: white; text-align: center; padding: 64px 24px 80px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute;
+    width: 600px; height: 600px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(193,127,36,0.1) 0%, transparent 70%);
+    top: 50%; left: 50%; transform: translate(-50%,-50%);
+  }
+  .hero-app { font-size: 11px; font-weight: 700; letter-spacing: 3px; color: rgba(245,200,66,0.5); margin-bottom: 16px; text-transform: uppercase; }
+  .hero-title { font-size: 40px; font-weight: 900; color: #f5c842; letter-spacing: -1px; margin-bottom: 10px; }
+  .hero-sub { font-size: 16px; color: rgba(245,200,66,0.5); }
+  .hero-link { display: inline-block; margin-top: 24px; padding: 10px 22px; background: rgba(193,127,36,0.2); border: 1px solid rgba(193,127,36,0.4); border-radius: 24px; color: #f5c842; font-size: 13px; text-decoration: none; transition: background 0.2s; }
+  .hero-link:hover { background: rgba(193,127,36,0.35); }
+
+  /* ── 콘텐츠 ── */
+  .content { max-width: 760px; margin: 0 auto; padding: 60px 24px 80px; }
+
+  /* ── 타임라인 ── */
+  .timeline { position: relative; }
+  .timeline::before {
+    content: ''; position: absolute;
+    left: 72px; top: 8px; bottom: 8px; width: 2px;
+    background: linear-gradient(to bottom, var(--amber), rgba(193,127,36,0.15));
+  }
+  .release { display: flex; gap: 24px; margin-bottom: 48px; position: relative; }
+  .release-date-col { flex-shrink: 0; width: 72px; text-align: right; padding-top: 4px; }
+  .release-dot {
+    position: absolute; left: 64px; top: 8px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--amber); border: 3px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--amber);
+    z-index: 1;
+  }
+  .release-dot.latest { background: var(--amber-light); box-shadow: 0 0 0 2px var(--amber-light), 0 0 12px rgba(245,200,66,0.4); }
+  .release-date { font-size: 11px; font-weight: 700; color: var(--text-muted); line-height: 1.4; }
+
+  .release-body { flex: 1; }
+  .release-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .version-badge {
+    font-size: 13px; font-weight: 800; color: white;
+    background: var(--amber); padding: 4px 12px; border-radius: 20px;
+  }
+  .version-badge.latest { background: var(--amber-light); color: var(--dark); }
+  .release-name { font-size: 17px; font-weight: 700; color: var(--dark); }
+  .latest-tag {
+    font-size: 10px; font-weight: 700; padding: 2px 8px;
+    background: var(--amber-dim); color: var(--amber-dark);
+    border-radius: 10px; letter-spacing: 0.5px;
+  }
+
+  .change-list { display: flex; flex-direction: column; gap: 8px; }
+  .change-item { display: flex; gap: 10px; align-items: flex-start; padding: 10px 14px; border-radius: 10px; background: var(--card); border: 1px solid var(--border); }
+  .change-badge {
+    flex-shrink: 0; font-size: 11px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; margin-top: 2px; white-space: nowrap;
+  }
+  .badge-new     { background: var(--new-bg);     color: var(--new);     }
+  .badge-improve { background: var(--improve-bg); color: var(--improve); }
+  .badge-fix     { background: var(--fix-bg);     color: var(--fix);     }
+  .badge-design  { background: var(--design-bg);  color: var(--design);  }
+  .change-text { font-size: 14px; color: var(--text); line-height: 1.6; }
+  .change-text strong { color: var(--dark); }
+
+  /* ── 레전드 ── */
+  .legend { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 32px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 12px; color: var(--text-muted); }
+
+  /* ── 고정 버튼 ── */
+  .fab { position: fixed; bottom: 24px; right: 24px; background: var(--amber); color: white; border: none; border-radius: 50px; padding: 12px 22px; font-size: 14px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 16px rgba(193,127,36,0.4); font-family: inherit; transition: background 0.2s; }
+  .fab:hover { background: var(--amber-dark); }
+
+  @media (max-width: 600px) {
+    .timeline::before { left: 0; }
+    .release { flex-direction: column; gap: 10px; padding-left: 20px; }
+    .release-date-col { width: auto; text-align: left; }
+    .release-dot { left: -8px; }
+    .hero-title { font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="hero">
+  <div class="hero-app">🥃 Whisky Notes</div>
+  <div class="hero-title">업데이트 노트</div>
+  <div class="hero-sub">버전별 변경사항 및 개선 이력</div>
+  <a class="hero-link" href="index.html">← 앱으로 돌아가기</a>
+</div>
+
+<div class="content">
+
+  <div class="legend">
+    <div class="legend-item"><span class="change-badge badge-new">✨ 신기능</span> 새로운 기능</div>
+    <div class="legend-item"><span class="change-badge badge-improve">🔧 개선</span> 기능 향상</div>
+    <div class="legend-item"><span class="change-badge badge-fix">🐛 수정</span> 버그 수정</div>
+    <div class="legend-item"><span class="change-badge badge-design">🎨 디자인</span> UI/UX 변경</div>
+  </div>
+
+  <div class="timeline">
+
+    <!-- v1.2 -->
+    <div class="release">
+      <div class="release-date-col">
+        <div class="release-dot latest"></div>
+        <div class="release-date">2026<br/>04·24</div>
+      </div>
+      <div class="release-body">
+        <div class="release-header">
+          <span class="version-badge latest">v 1.2</span>
+          <span class="release-name">커뮤니티 통계 개편</span>
+          <span class="latest-tag">LATEST</span>
+        </div>
+        <div class="change-list">
+          <div class="change-item">
+            <span class="change-badge badge-improve">🔧 개선</span>
+            <span class="change-text"><strong>다른 사람 통계</strong>를 더보기 메뉴 팝업에서 <strong>통계 페이지 내 탭</strong>으로 이동. '내 통계 / 다른 사람 통계' 버튼으로 전환 가능.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-improve">🔧 개선</span>
+            <span class="change-text"><strong>인기 위스키 · 지역별 · 종류별</strong> 섹션의 바 차트 제거 → 위스키 이름 전체가 보이는 목록 + 횟수 뱃지 형태로 변경.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-fix">🐛 수정</span>
+            <span class="change-text"><strong>평균 점수 분석</strong> 바 너비가 항상 100%로 표시되던 문제 수정 → 실제 점수에 비례해 채워지도록 개선 (83점 → 83% 표시). 레이블에서 영문 제거 (향 / 맛 / 피니시 / 종합).</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v1.1 -->
+    <div class="release">
+      <div class="release-date-col">
+        <div class="release-dot"></div>
+        <div class="release-date">2026<br/>04·24</div>
+      </div>
+      <div class="release-body">
+        <div class="release-header">
+          <span class="version-badge">v 1.1</span>
+          <span class="release-name">모바일 UX 및 디자인 개선</span>
+        </div>
+        <div class="change-list">
+          <div class="change-item">
+            <span class="change-badge badge-improve">🔧 개선</span>
+            <span class="change-text"><strong>향미 프로필 슬라이더</strong> 레이아웃 변경 — 슬라이더와 레이더 차트가 나란히 배치되던 구조에서 슬라이더가 전체 너비를 사용하고 레이더 차트가 아래에 오는 세로 배치로 변경. 모바일에서 훨씬 조작하기 쉬워짐.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-improve">🔧 개선</span>
+            <span class="change-text">슬라이더 <strong>터치 영역 확대</strong> — 트랙 두께 4px → 8px, 썸 크기 16px → 28px로 확대.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-fix">🐛 수정</span>
+            <span class="change-text">레이더 차트에서 <strong>스파이시 · 스모키</strong> 텍스트가 캔버스 경계에 잘리던 문제 수정 — 캔버스 크기 및 여백 재조정.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-design">🎨 디자인</span>
+            <span class="change-text">사이드바 · 하단 내비게이션 · 더보기 메뉴 · 사이드바 하단 버튼 아이콘 전체를 이모지에서 <strong>위스키 특화 SVG 아이콘</strong>으로 교체 — 위스키 병 / 글랜캐런 잔 / 바 차트 / 가격 태그 형태.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-improve">🔧 개선</span>
+            <span class="change-text"><strong>사용설명서</strong> v1.1 업데이트 — 목차 10개 → 14개 섹션 확장, 데이터 관리 섹션의 잘못된 내용(백업 불가) 수정, 향미 슬라이더 설명 반영.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- v1.0 -->
+    <div class="release">
+      <div class="release-date-col">
+        <div class="release-dot"></div>
+        <div class="release-date">2026<br/>04·22</div>
+      </div>
+      <div class="release-body">
+        <div class="release-header">
+          <span class="version-badge">v 1.0</span>
+          <span class="release-name">위스키 노트 출시 🎉</span>
+        </div>
+        <div class="change-list">
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>위스키 컬렉션 관리</strong> — 미개봉 · 개봉중 · 완음 상태로 분류, 사진 첨부, 구매 정보(날짜·가격·구매처) 기록, 잔여량 자동 계산.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>시음 노트</strong> — 향(Nose) · 맛(Palate) · 피니시(Finish) 텍스트 및 개별 점수 슬라이더(0~100), 액체 색깔, 시음량 기록. 시음 사진 첨부 가능.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>향미 휠 레이더 차트</strong> — 과일 · 달콤 · 스파이시 · 오크 · 스모키 · 곡물 6축 향미 프로필 입력 및 육각형 차트 시각화.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>인스타그램 공유 카드</strong> — 1080×1080px PNG 자동 생성. 위스키 정보 · 향미 휠 · 시음 노트 · 날짜 포함.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>라벨 스캔 (OCR)</strong> — Google Cloud Vision API 연동. 위스키 병 라벨 사진을 찍으면 이름 · 도수 · 숙성연수 자동 입력.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>증류소 자동완성</strong> — Wikidata 기반 실시간 검색. 증류소 선택 시 지역 · 종류 자동 입력.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>통계 분석</strong> — 지역별 · 종류별 · 숙성연수별 · 도수별 · 점수 분포 차트. 취향 분석 리포트 (스타일 추천 포함).</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>가성비 랭킹</strong> — 구매 가격과 시음 점수로 자동 계산. S/A/B/C/D 등급 부여. 컬렉션 카드에 뱃지 표시.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>위시리스트</strong> — 마셔보고 싶은 위스키 저장. 우선순위(🔴🟡🔵) 설정, 구매완료 처리.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>데이터 내보내기 / 가져오기</strong> — 전체 데이터(사진 포함)를 JSON 파일로 백업 및 복원. 병합 · 덮어쓰기 모드 지원.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>다른 사람 통계</strong> — 동의 사용자들의 익명 시음 데이터 집계. 인기 위스키 TOP5 · 지역별 · 종류별 분포 확인.</span>
+          </div>
+          <div class="change-item">
+            <span class="change-badge badge-new">✨ 신기능</span>
+            <span class="change-text"><strong>PWA 지원</strong> — 홈 화면에 앱 설치 가능. 오프라인에서도 컬렉션 및 시음 노트 조회 · 작성 가능.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /timeline -->
+
+  <div style="margin-top:48px;padding-top:32px;border-top:1px solid var(--border);text-align:center;color:var(--text-muted);font-size:13px;line-height:2;">
+    <div style="font-size:28px;margin-bottom:8px;">🥃</div>
+    <div style="font-weight:700;color:var(--amber);font-size:15px;margin-bottom:4px;">위스키 노트</div>
+    <div>피드백이나 버그 제보는 앱 내 <strong>피드백 보내기</strong> 메뉴를 이용해주세요.</div>
+    <div style="margin-top:8px;"><a href="https://somiwoojoopapa1212.github.io/whisky-notes/" style="color:var(--amber);text-decoration:none;">somiwoojoopapa1212.github.io/whisky-notes</a></div>
+  </div>
+
+</div>
+
+<button class="fab no-print" onclick="window.print()">🖨️ PDF 저장</button>
+
+</body>
+</html>
