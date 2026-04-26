@@ -1,0 +1,88 @@
+name: Build TWA AAB
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+        with:
+          gradle-version: '8.6'
+
+      - name: Accept Android SDK licenses
+        run: yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --licenses || true
+
+      - name: Generate launcher icons
+        run: |
+          for entry in mdpi:48 hdpi:72 xhdpi:96 xxhdpi:144 xxxhdpi:192; do
+            density="${entry%:*}"
+            size="${entry#*:}"
+            mkdir -p android/app/src/main/res/mipmap-${density}
+            convert icons/icon-192.png -resize ${size}x${size} \
+              android/app/src/main/res/mipmap-${density}/ic_launcher.png
+          done
+
+      - name: Setup signing keystore
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
+            echo "KEY_STORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
+            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}"                   >> $GITHUB_ENV
+            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}"             >> $GITHUB_ENV
+          else
+            keytool -genkeypair -v \
+              -keystore android/release.keystore \
+              -alias whiskynotes \
+              -keyalg RSA -keysize 2048 \
+              -validity 10000 \
+              -storepass changeit \
+              -keypass changeit \
+              -dname "CN=Whisky Notes, OU=App, O=Personal, L=Seoul, ST=Seoul, C=KR" \
+              -noprompt
+            echo "KEY_STORE_PASSWORD=changeit" >> $GITHUB_ENV
+            echo "KEY_ALIAS=whiskynotes"       >> $GITHUB_ENV
+            echo "KEY_PASSWORD=changeit"       >> $GITHUB_ENV
+          fi
+
+      - name: Print keystore SHA-256 fingerprint
+        run: |
+          keytool -list -v \
+            -keystore android/release.keystore \
+            -storepass $KEY_STORE_PASSWORD \
+            -alias $KEY_ALIAS 2>/dev/null \
+            | grep "SHA256:" | head -1
+
+      - name: Generate Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version=8.6
+
+      - name: Build Release AAB
+        working-directory: android
+        run: ./gradlew :app:bundleRelease
+
+      - name: Upload AAB
+        uses: actions/upload-artifact@v4
+        with:
+          name: whisky-notes-release-aab
+          path: android/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 30
+
+      - name: Upload keystore (save for future builds)
+        if: ${{ !secrets.KEYSTORE_BASE64 }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-keystore
+          path: android/release.keystore
+          retention-days: 30

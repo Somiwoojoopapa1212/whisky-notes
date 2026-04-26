@@ -1,0 +1,8 @@
+android/release.keystore
+android/.gradle/
+android/app/build/
+android/build/
+android/gradlew
+android/gradlew.bat
+android/gradle/wrapper/gradle-wrapper.jar
+android/gradle/wrapper/gradle-wrapper.properties
