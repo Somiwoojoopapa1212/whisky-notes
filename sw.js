@@ -2,7 +2,6 @@ const CACHE_NAME = 'whisky-notes-v11';
 const ASSETS = [
   './',
   './index.html',
-  './css/style.css',
   './js/app.js',
   './js/storage.js',
   './manifest.json',
