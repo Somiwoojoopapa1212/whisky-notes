@@ -35,12 +35,18 @@ jobs:
           done
 
       - name: Setup signing keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.KEYSTORE_BASE64 }}
+          SECRET_KEY_STORE_PASSWORD: ${{ secrets.KEY_STORE_PASSWORD }}
+          SECRET_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          SECRET_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/release.keystore
-            echo "KEY_STORE_PASSWORD=${{ secrets.KEY_STORE_PASSWORD }}" >> $GITHUB_ENV
-            echo "KEY_ALIAS=${{ secrets.KEY_ALIAS }}"                   >> $GITHUB_ENV
-            echo "KEY_PASSWORD=${{ secrets.KEY_PASSWORD }}"             >> $GITHUB_ENV
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > android/release.keystore
+            echo "KEY_STORE_PASSWORD=$SECRET_KEY_STORE_PASSWORD" >> $GITHUB_ENV
+            echo "KEY_ALIAS=$SECRET_KEY_ALIAS"                   >> $GITHUB_ENV
+            echo "KEY_PASSWORD=$SECRET_KEY_PASSWORD"             >> $GITHUB_ENV
+            echo "NEW_KEYSTORE=false"                            >> $GITHUB_ENV
           else
             keytool -genkeypair -v \
               -keystore android/release.keystore \
@@ -54,6 +60,7 @@ jobs:
             echo "KEY_STORE_PASSWORD=changeit" >> $GITHUB_ENV
             echo "KEY_ALIAS=whiskynotes"       >> $GITHUB_ENV
             echo "KEY_PASSWORD=changeit"       >> $GITHUB_ENV
+            echo "NEW_KEYSTORE=true"           >> $GITHUB_ENV
           fi
 
       - name: Print keystore SHA-256 fingerprint
@@ -80,7 +87,7 @@ jobs:
           retention-days: 30
 
       - name: Upload keystore (save for future builds)
-        if: ${{ !secrets.KEYSTORE_BASE64 }}
+        if: env.NEW_KEYSTORE == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: release-keystore
