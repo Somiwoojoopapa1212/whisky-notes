@@ -1994,8 +1994,9 @@ body {
 }
 .btn-share:hover { opacity: 1; }
 
-/* ══ 컬렉션 툴바 (검색 + 정렬) ══ */
-.collection-toolbar {
+/* ══ 컬렉션·시음노트 툴바 (검색 + 정렬) ══ */
+.collection-toolbar,
+.tasting-toolbar {
   display: flex;
   gap: 10px;
   margin-bottom: 16px;
