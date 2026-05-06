@@ -398,7 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statsPeriod !== 'custom') renderStats();
     });
   });
-  initDetailSheetSwipe();
+  initMoreMenuSwipe();
   renderPage('collection');
 
   if (!localStorage.getItem('cloudSyncConsent')) {
@@ -2298,46 +2298,33 @@ function openModal(id) {
   if (body) body.scrollTop = 0;
 }
 function closeModal(id) {
-  if (id === 'modal-detail' && window.innerWidth <= 640) {
-    const overlay = document.getElementById(id);
-    const sheet = overlay.querySelector('.modal');
-    sheet.style.transition = 'transform 0.28s ease';
-    sheet.style.transform = 'translateY(100%)';
-    setTimeout(() => {
-      overlay.classList.remove('open');
-      sheet.style.transform = '';
-      sheet.style.transition = '';
-    }, 280);
-    return;
-  }
   document.getElementById(id).classList.remove('open');
   if (id === 'modal-whisky') hideAc();
 }
 
-function initDetailSheetSwipe() {
-  const overlay = document.getElementById('modal-detail');
-  const sheet = overlay.querySelector('.modal');
+function initMoreMenuSwipe() {
+  const panel = document.querySelector('.more-menu-panel');
+  if (!panel) return;
   let startY = 0, dragging = false;
-  sheet.addEventListener('touchstart', e => {
-    if (window.innerWidth > 640) return;
-    startY = e.touches[0].clientY;
-    dragging = true;
-    sheet.style.transition = 'none';
+  panel.addEventListener('touchstart', e => {
+    startY = e.touches[0].clientY; dragging = true;
+    panel.style.transition = 'none';
   }, { passive: true });
-  sheet.addEventListener('touchmove', e => {
-    if (!dragging || window.innerWidth > 640) return;
+  panel.addEventListener('touchmove', e => {
+    if (!dragging) return;
     const dy = e.touches[0].clientY - startY;
-    if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+    if (dy > 0) panel.style.transform = `translateY(${dy}px)`;
   }, { passive: true });
-  sheet.addEventListener('touchend', e => {
-    if (!dragging || window.innerWidth > 640) return;
+  panel.addEventListener('touchend', e => {
+    if (!dragging) return;
     dragging = false;
     const dy = e.changedTouches[0].clientY - startY;
-    if (dy > 80) {
-      closeModal('modal-detail');
+    if (dy > 60) {
+      panel.style.transition = 'transform 0.25s ease';
+      panel.style.transform = 'translateY(100%)';
+      setTimeout(() => { closeMoreMenu(); panel.style.transform = ''; panel.style.transition = ''; }, 250);
     } else {
-      sheet.style.transition = '';
-      sheet.style.transform = '';
+      panel.style.transition = ''; panel.style.transform = '';
     }
   });
 }
