@@ -1,0 +1,30 @@
+name: SW 캐시 버전 자동 갱신
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'index.html'
+      - 'js/**'
+      - 'css/**'
+
+jobs:
+  update-sw:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: SW 캐시 버전 갱신
+        run: |
+          VERSION="whisky-notes-$(date +%Y%m%d%H%M%S)"
+          sed -i "s/const CACHE_NAME = 'whisky-notes-[^']*'/const CACHE_NAME = '${VERSION}'/" sw.js
+
+      - name: 변경사항 커밋
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add sw.js
+          git diff --staged --quiet || git commit -m "chore: SW 캐시 버전 자동 갱신 [skip ci]"
+          git push

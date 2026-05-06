@@ -1,9 +1,10 @@
-const CACHE_NAME = 'whisky-notes-v11';
+const CACHE_NAME = 'whisky-notes-v12';
 const ASSETS = [
   './',
   './index.html',
   './js/app.js',
   './js/storage.js',
+  './css/style.css',
   './manifest.json',
   './icons/icon.svg',
   './icons/icon-192.png',
@@ -30,15 +31,32 @@ self.addEventListener('activate', e => {
 
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+
+  // 이미지·아이콘 → 캐시 우선 (변경 빈도 낮음)
+  const isStatic = /\.(png|svg|ico|woff2?|jpg|jpeg|webp)$/i.test(url.pathname);
+  if (isStatic) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(res => {
+          if (res && res.status === 200 && res.type !== 'opaque') {
+            caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
+          }
+          return res;
+        });
+      })
+    );
+    return;
+  }
+
+  // HTML·JS·CSS → 네트워크 우선, 오프라인 시 캐시 폴백
   e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (!res || res.status !== 200 || res.type === 'opaque') return res;
-        const clone = res.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
-        return res;
-      });
-    })
+    fetch(e.request).then(res => {
+      if (res && res.status === 200 && res.type !== 'opaque') {
+        caches.open(CACHE_NAME).then(c => c.put(e.request, res.clone()));
+      }
+      return res;
+    }).catch(() => caches.match(e.request))
   );
 });
