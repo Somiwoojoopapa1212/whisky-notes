@@ -399,7 +399,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
   initMoreMenuSwipe();
-  renderPage('collection');
+
+  // 콜키지도에서 넘어온 경우: 컬렉션 대신 시음 노트로 바로 시작
+  const _fromPlace = new URLSearchParams(window.location.search).get('place');
+  if (_fromPlace) {
+    history.replaceState({}, '', window.location.pathname);
+    document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(i => {
+      i.classList.toggle('active', i.dataset.page === 'tasting');
+    });
+    renderPage('tasting');
+    setTimeout(() => {
+      openAddTastingModal();
+      const placeEl = document.getElementById('tasting-place');
+      if (placeEl) placeEl.value = _fromPlace;
+    }, 200);
+  } else {
+    renderPage('collection');
+  }
 
   if (!localStorage.getItem('cloudSyncConsent')) {
     setTimeout(() => {
@@ -411,18 +427,6 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', e => {
     if (!e.target.closest('.ac-wrap') && !e.target.closest('.ac-list')) hideAc();
   });
-
-  // 콜키지도에서 넘어온 경우 시음 노트 폼 자동 실행
-  const _fromPlace = new URLSearchParams(window.location.search).get('place');
-  if (_fromPlace) {
-    history.replaceState({}, '', window.location.pathname);
-    renderPage('tasting');
-    setTimeout(() => {
-      openAddTastingModal();
-      const placeEl = document.getElementById('tasting-place');
-      if (placeEl) placeEl.value = _fromPlace;
-    }, 200);
-  }
 });
 
 function setupNav() {
