@@ -165,7 +165,6 @@ body {
   flex-shrink: 0;
   padding: 28px 32px 0;
   background: var(--bg);
-  border-bottom: 1px solid var(--border);
 }
 .page-sticky .page-header    { margin-bottom: 16px; }
 .page-sticky .tab-bar        { margin-bottom: 0; }
