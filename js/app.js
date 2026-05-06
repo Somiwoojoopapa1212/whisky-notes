@@ -2319,7 +2319,7 @@ function initMoreMenuSwipe() {
     if (!dragging) return;
     dragging = false;
     const dy = e.changedTouches[0].clientY - startY;
-    if (dy > 60) {
+    if (dy > 150) {
       panel.style.transition = 'transform 0.25s ease';
       panel.style.transform = 'translateY(100%)';
       setTimeout(() => { closeMoreMenu(); panel.style.transform = ''; panel.style.transition = ''; }, 250);
