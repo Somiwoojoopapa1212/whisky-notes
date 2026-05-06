@@ -170,7 +170,7 @@ body {
 .page-sticky .page-header    { margin-bottom: 16px; }
 .page-sticky .tab-bar        { margin-bottom: 0; }
 .page-sticky .filter-bar     { margin-bottom: 0; }
-.page-sticky .collection-toolbar { margin-bottom: 0; }
+.page-sticky .collection-toolbar { margin-bottom: 12px; }
 .page-sticky .stats-period-bar   { margin-bottom: 0; }
 
 .page-scroll {
