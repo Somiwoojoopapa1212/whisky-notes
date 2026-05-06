@@ -162,74 +162,85 @@
 
       <!-- 컬렉션 페이지 -->
       <div id="page-collection" class="page active">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">위스키 컬렉션</h1>
-            <p class="page-subtitle" id="collection-subtitle"></p>
+        <div class="page-sticky">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">위스키 컬렉션</h1>
+              <p class="page-subtitle" id="collection-subtitle"></p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddWhiskyModal()">+ 위스키 추가</button>
           </div>
-          <button class="btn btn-primary" onclick="openAddWhiskyModal()">+ 위스키 추가</button>
-        </div>
-        <div class="collection-toolbar">
-          <div class="search-wrap">
-            <span class="search-icon">🔍</span>
-            <input type="search" id="collection-search" placeholder="이름 또는 증류소 검색..." oninput="onCollectionSearch(this.value)" autocomplete="off" />
+          <div class="collection-toolbar">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="search" id="collection-search" placeholder="이름 또는 증류소 검색..." oninput="onCollectionSearch(this.value)" autocomplete="off" />
+            </div>
+            <select class="sort-select" id="collection-sort" onchange="onCollectionSort(this.value)">
+              <option value="recent">최근 추가순</option>
+              <option value="name">이름순</option>
+              <option value="score">점수순</option>
+              <option value="price">가격순</option>
+              <option value="abv">도수순</option>
+            </select>
           </div>
-          <select class="sort-select" id="collection-sort" onchange="onCollectionSort(this.value)">
-            <option value="recent">최근 추가순</option>
-            <option value="name">이름순</option>
-            <option value="score">점수순</option>
-            <option value="price">가격순</option>
-            <option value="abv">도수순</option>
-          </select>
+          <div class="tab-bar">
+            <button class="tab active" data-status="all">전체</button>
+            <button class="tab" data-status="unopened">미개봉</button>
+            <button class="tab" data-status="opened">개봉중</button>
+            <button class="tab" data-status="finished">완음</button>
+          </div>
         </div>
-        <div class="tab-bar">
-          <button class="tab active" data-status="all">전체</button>
-          <button class="tab" data-status="unopened">미개봉</button>
-          <button class="tab" data-status="opened">개봉중</button>
-          <button class="tab" data-status="finished">완음</button>
-        </div>
-        <div class="whisky-grid" id="whisky-grid"></div>
-        <div class="empty-state" id="collection-empty" style="display:none">
-          <div class="empty-icon">🥃</div>
-          <p>보유한 위스키를 추가해보세요!</p>
-          <button class="btn btn-primary" onclick="openAddWhiskyModal()">위스키 추가하기</button>
+        <div class="page-scroll">
+          <div class="whisky-grid" id="whisky-grid"></div>
+          <div class="empty-state" id="collection-empty" style="display:none">
+            <div class="empty-icon">🥃</div>
+            <p>보유한 위스키를 추가해보세요!</p>
+            <button class="btn btn-primary" onclick="openAddWhiskyModal()">위스키 추가하기</button>
+          </div>
         </div>
       </div>
 
       <!-- 시음 노트 페이지 -->
       <div id="page-tasting" class="page">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">시음 노트</h1>
-            <p class="page-subtitle" id="tasting-subtitle"></p>
+        <div class="page-sticky">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">시음 노트</h1>
+              <p class="page-subtitle" id="tasting-subtitle"></p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddTastingModal()">+ 시음 기록</button>
           </div>
-          <button class="btn btn-primary" onclick="openAddTastingModal()">+ 시음 기록</button>
+          <div class="filter-bar">
+            <select id="tasting-filter-whisky">
+              <option value="">전체 위스키</option>
+            </select>
+          </div>
         </div>
-        <div class="filter-bar">
-          <select id="tasting-filter-whisky">
-            <option value="">전체 위스키</option>
-          </select>
-        </div>
-        <div class="tasting-list" id="tasting-list"></div>
-        <div class="empty-state" id="tasting-empty" style="display:none">
-          <div class="empty-icon">📝</div>
-          <p>시음 노트를 기록해보세요!</p>
-          <button class="btn btn-primary" onclick="openAddTastingModal()">시음 기록하기</button>
+        <div class="page-scroll">
+          <div class="tasting-list" id="tasting-list"></div>
+          <div class="empty-state" id="tasting-empty" style="display:none">
+            <div class="empty-icon">📝</div>
+            <p>시음 노트를 기록해보세요!</p>
+            <button class="btn btn-primary" onclick="openAddTastingModal()">시음 기록하기</button>
+          </div>
         </div>
       </div>
 
       <!-- 통계 페이지 -->
       <div id="page-stats" class="page">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">시음 통계</h1>
-            <p class="page-subtitle" id="stats-subtitle"></p>
-          </div>
-          <div class="stats-view-toggle">
-            <button class="stats-view-btn active" data-view="mine" onclick="showStatsView('mine')">내 통계</button>
-            <button class="stats-view-btn" data-view="community" onclick="showStatsView('community')">다른 사람 통계</button>
+        <div class="page-sticky">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">시음 통계</h1>
+              <p class="page-subtitle" id="stats-subtitle"></p>
+            </div>
+            <div class="stats-view-toggle">
+              <button class="stats-view-btn active" data-view="mine" onclick="showStatsView('mine')">내 통계</button>
+              <button class="stats-view-btn" data-view="community" onclick="showStatsView('community')">다른 사람 통계</button>
+            </div>
           </div>
         </div>
+        <div class="page-scroll">
 
         <!-- 내 통계 -->
         <div id="stats-view-mine">
@@ -296,22 +307,27 @@
           </div>
         </div>
 
+        </div><!-- /page-scroll -->
       </div>
 
       <!-- 위시리스트 페이지 -->
       <div id="page-wishlist" class="page">
-        <div class="page-header">
-          <div>
-            <h1 class="page-title">위시리스트</h1>
-            <p class="page-subtitle" id="wishlist-subtitle"></p>
+        <div class="page-sticky">
+          <div class="page-header">
+            <div>
+              <h1 class="page-title">위시리스트</h1>
+              <p class="page-subtitle" id="wishlist-subtitle"></p>
+            </div>
+            <button class="btn btn-primary" onclick="openAddWishlistModal()">+ 추가</button>
           </div>
-          <button class="btn btn-primary" onclick="openAddWishlistModal()">+ 추가</button>
         </div>
-        <div class="wishlist-grid" id="wishlist-grid"></div>
-        <div class="empty-state" id="wishlist-empty" style="display:none">
-          <div class="empty-icon">🔖</div>
-          <p>마셔보고 싶은 위스키를 저장해보세요!</p>
-          <button class="btn btn-primary" onclick="openAddWishlistModal()">위시리스트 추가</button>
+        <div class="page-scroll">
+          <div class="wishlist-grid" id="wishlist-grid"></div>
+          <div class="empty-state" id="wishlist-empty" style="display:none">
+            <div class="empty-icon">🔖</div>
+            <p>마셔보고 싶은 위스키를 저장해보세요!</p>
+            <button class="btn btn-primary" onclick="openAddWishlistModal()">위시리스트 추가</button>
+          </div>
         </div>
       </div>
 

@@ -149,13 +149,36 @@ body {
 .main-content {
   margin-left: var(--sidebar-width);
   flex: 1;
-  padding: 32px;
   max-width: calc(100vw - var(--sidebar-width));
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── 페이지 ── */
 .page { display: none; }
-.page.active { display: block; }
+.page.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+/* ── 고정 헤더 / 스크롤 영역 ── */
+.page-sticky {
+  flex-shrink: 0;
+  padding: 28px 32px 0;
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+}
+.page-sticky .page-header    { margin-bottom: 16px; }
+.page-sticky .tab-bar        { margin-bottom: 0; }
+.page-sticky .filter-bar     { margin-bottom: 0; }
+.page-sticky .collection-toolbar { margin-bottom: 0; }
+.page-sticky .stats-period-bar   { margin-bottom: 0; }
+
+.page-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 32px 32px;
+  -webkit-overflow-scrolling: touch;
+}
 
 .page-header {
   display: flex;
@@ -1077,9 +1100,10 @@ body {
   .sidebar { display: none; }
   .bottom-nav { display: flex; }
   .main-content {
-    padding: 20px 16px;
-    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    height: calc(100vh - 72px - env(safe-area-inset-bottom, 0px));
   }
+  .page-sticky { padding: 16px 16px 0; }
+  .page-scroll  { padding: 16px 16px 20px; }
   .whisky-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }
   .form-col-2 { grid-column: 1; }
@@ -1090,7 +1114,7 @@ body {
 
 /* iOS standalone safe area */
 @media (display-mode: standalone) {
-  .main-content { padding-top: max(20px, env(safe-area-inset-top)); }
+  .page-sticky { padding-top: max(24px, env(safe-area-inset-top)); }
 }
 
 /* ── 하단 더보기 확장 메뉴 ── */
@@ -2087,3 +2111,4 @@ html.dark .import-file-label { background: var(--secondary); }
 html.dark .consent-banner { background: var(--card-bg); border-color: var(--border); }
 html.dark .tasting-card-detail { background: var(--secondary); }
 html.dark .detail-info-row { background: var(--card-bg); }
+html.dark .page-sticky { background: var(--bg); border-bottom-color: var(--border); }
