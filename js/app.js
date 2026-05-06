@@ -411,6 +411,18 @@ document.addEventListener('DOMContentLoaded', () => {
   document.addEventListener('click', e => {
     if (!e.target.closest('.ac-wrap') && !e.target.closest('.ac-list')) hideAc();
   });
+
+  // 콜키지도에서 넘어온 경우 시음 노트 폼 자동 실행
+  const _fromPlace = new URLSearchParams(window.location.search).get('place');
+  if (_fromPlace) {
+    history.replaceState({}, '', window.location.pathname);
+    renderPage('tasting');
+    setTimeout(() => {
+      openAddTastingModal();
+      const placeEl = document.getElementById('tasting-place');
+      if (placeEl) placeEl.value = _fromPlace;
+    }, 200);
+  }
 });
 
 function setupNav() {
@@ -1071,6 +1083,7 @@ function openEditTastingModal(id) {
   setSliderVal('tasting-finish-score', 'val-finish-score', t.finishScore);
   setSliderVal('tasting-score', 'val-total-score', t.score);
   setVal('tasting-notes', t.notes);
+  setVal('tasting-place', t.place || '');
   setFlavorData(t.flavors || null);
   showAutoFillHint(false);
   clearTastingImageUI();
@@ -1095,7 +1108,7 @@ function clearTastingForm() {
   ['tasting-whisky-id','tasting-date','tasting-amount','tasting-color',
    'tasting-region','tasting-type','tasting-age','tasting-abv',
    'tasting-nose','tasting-palate','tasting-finish','tasting-notes',
-   'tasting-custom-whisky']
+   'tasting-custom-whisky','tasting-place']
     .forEach(id => setVal(id, ''));
   document.getElementById('custom-whisky-group').style.display = 'none';
   showAutoFillHint(false);
@@ -1134,6 +1147,7 @@ async function saveTasting() {
     finishScore: getSliderVal('tasting-finish-score'),
     score: getSliderVal('tasting-score'),
     notes: getVal('tasting-notes').trim(),
+    place: getVal('tasting-place').trim(),
     flavors: getFlavorData(),
   };
 
