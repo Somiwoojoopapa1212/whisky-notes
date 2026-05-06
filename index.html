@@ -210,9 +210,16 @@
             </div>
             <button class="btn btn-primary" onclick="openAddTastingModal()">+ 시음 기록</button>
           </div>
-          <div class="filter-bar">
-            <select id="tasting-filter-whisky">
-              <option value="">전체 위스키</option>
+          <div class="tasting-toolbar">
+            <div class="search-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="search" id="tasting-search" placeholder="위스키 이름 검색..." oninput="onTastingSearch(this.value)" autocomplete="off" />
+            </div>
+            <select class="sort-select" id="tasting-sort" onchange="onTastingSort(this.value)">
+              <option value="date_desc">최신순</option>
+              <option value="date_asc">오래된순</option>
+              <option value="score_desc">점수 높은순</option>
+              <option value="score_asc">점수 낮은순</option>
             </select>
           </div>
         </div>

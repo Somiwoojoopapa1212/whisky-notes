@@ -163,14 +163,15 @@ body {
 /* ── 고정 헤더 / 스크롤 영역 ── */
 .page-sticky {
   flex-shrink: 0;
-  padding: 28px 32px 0;
+  padding: 28px 32px 16px;
   background: var(--bg);
 }
-.page-sticky .page-header    { margin-bottom: 16px; }
-.page-sticky .tab-bar        { margin-bottom: 0; }
-.page-sticky .filter-bar     { margin-bottom: 0; }
-.page-sticky .collection-toolbar { margin-bottom: 12px; }
-.page-sticky .stats-period-bar   { margin-bottom: 0; }
+.page-sticky .page-header         { margin-bottom: 16px; }
+.page-sticky .tab-bar             { margin-bottom: 0; }
+.page-sticky .filter-bar          { margin-bottom: 0; }
+.page-sticky .collection-toolbar  { margin-bottom: 12px; }
+.page-sticky .tasting-toolbar     { margin-bottom: 0; }
+.page-sticky .stats-period-bar    { margin-bottom: 0; }
 
 .page-scroll {
   flex: 1;
@@ -1101,7 +1102,7 @@ body {
   .main-content {
     height: calc(100vh - 72px - env(safe-area-inset-bottom, 0px));
   }
-  .page-sticky { padding: 16px 16px 0; }
+  .page-sticky { padding: 16px 16px 12px; }
   .page-scroll  { padding: 16px 16px 20px; }
   .whisky-grid { grid-template-columns: 1fr; }
   .form-grid { grid-template-columns: 1fr; }

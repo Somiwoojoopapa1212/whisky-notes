@@ -26,7 +26,8 @@ function installApp() {
 // ── 상태 ──
 let currentPage = 'collection';
 let currentStatusFilter = 'all';
-let currentTastingFilterWhisky = '';
+let currentTastingSearch = '';
+let currentTastingSort = 'date_desc';
 let editingWhiskyId = null;
 let editingTastingId = null;
 let statsPeriod = 'all';
@@ -367,10 +368,6 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 3800);
   setupNav();
   setupTabFilters();
-  document.getElementById('tasting-filter-whisky').addEventListener('change', e => {
-    currentTastingFilterWhisky = e.target.value;
-    renderTastingList();
-  });
   document.getElementById('tasting-whisky-id').addEventListener('change', e => {
     const val = e.target.value;
     const isCustom = val === '__custom__';
@@ -890,24 +887,37 @@ function colorSwatch(colorName) {
 // ── 시음 노트 ──
 // ══════════════════════════════
 function renderTastingPage() {
-  const whiskies = Storage.getWhiskies();
-  const sel = document.getElementById('tasting-filter-whisky');
-  const prev = sel.value;
-  sel.innerHTML = '<option value="">전체 위스키</option>';
-  whiskies.forEach(w => {
-    const opt = document.createElement('option');
-    opt.value = w.id;
-    opt.textContent = w.name;
-    sel.appendChild(opt);
-  });
-  sel.value = prev;
+  renderTastingList();
+}
+
+function onTastingSearch(q) {
+  currentTastingSearch = q;
+  renderTastingList();
+}
+function onTastingSort(val) {
+  currentTastingSort = val;
   renderTastingList();
 }
 
 function renderTastingList() {
   let tastings = Storage.getTastings();
-  if (currentTastingFilterWhisky) tastings = tastings.filter(t => t.whiskeyId === currentTastingFilterWhisky);
-  tastings.sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+  if (currentTastingSearch) {
+    const q = currentTastingSearch.toLowerCase();
+    tastings = tastings.filter(t => {
+      const name = t.whiskeyId
+        ? (Storage.getWhisky(t.whiskeyId)?.name || '')
+        : (t.customWhiskeyName || '');
+      return name.toLowerCase().includes(q);
+    });
+  }
+
+  tastings = [...tastings].sort((a, b) => {
+    if (currentTastingSort === 'date_asc')   return (a.date || '').localeCompare(b.date || '');
+    if (currentTastingSort === 'score_desc') return (parseInt(b.score) || 0) - (parseInt(a.score) || 0);
+    if (currentTastingSort === 'score_asc')  return (parseInt(a.score) || 0) - (parseInt(b.score) || 0);
+    return (b.date || '').localeCompare(a.date || '');
+  });
 
   document.getElementById('tasting-subtitle').textContent = `총 ${tastings.length}개의 시음 노트`;
 
