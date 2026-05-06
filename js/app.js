@@ -398,6 +398,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (statsPeriod !== 'custom') renderStats();
     });
   });
+  initDetailSheetSwipe();
   renderPage('collection');
 
   if (!localStorage.getItem('cloudSyncConsent')) {
@@ -2297,8 +2298,48 @@ function openModal(id) {
   if (body) body.scrollTop = 0;
 }
 function closeModal(id) {
+  if (id === 'modal-detail' && window.innerWidth <= 640) {
+    const overlay = document.getElementById(id);
+    const sheet = overlay.querySelector('.modal');
+    sheet.style.transition = 'transform 0.28s ease';
+    sheet.style.transform = 'translateY(100%)';
+    setTimeout(() => {
+      overlay.classList.remove('open');
+      sheet.style.transform = '';
+      sheet.style.transition = '';
+    }, 280);
+    return;
+  }
   document.getElementById(id).classList.remove('open');
   if (id === 'modal-whisky') hideAc();
+}
+
+function initDetailSheetSwipe() {
+  const overlay = document.getElementById('modal-detail');
+  const sheet = overlay.querySelector('.modal');
+  let startY = 0, dragging = false;
+  sheet.addEventListener('touchstart', e => {
+    if (window.innerWidth > 640) return;
+    startY = e.touches[0].clientY;
+    dragging = true;
+    sheet.style.transition = 'none';
+  }, { passive: true });
+  sheet.addEventListener('touchmove', e => {
+    if (!dragging || window.innerWidth > 640) return;
+    const dy = e.touches[0].clientY - startY;
+    if (dy > 0) sheet.style.transform = `translateY(${dy}px)`;
+  }, { passive: true });
+  sheet.addEventListener('touchend', e => {
+    if (!dragging || window.innerWidth > 640) return;
+    dragging = false;
+    const dy = e.changedTouches[0].clientY - startY;
+    if (dy > 80) {
+      closeModal('modal-detail');
+    } else {
+      sheet.style.transition = '';
+      sheet.style.transform = '';
+    }
+  });
 }
 document.addEventListener('click', e => {
   if (e.target.classList.contains('modal-overlay')) {
