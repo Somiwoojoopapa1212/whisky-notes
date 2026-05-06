@@ -146,6 +146,10 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
           <span>데이터 가져오기</span>
         </button>
+        <button class="feedback-btn" id="darkmode-btn" onclick="toggleDarkMode()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <span id="darkmode-label">다크 모드</span>
+        </button>
         <button class="reset-btn" onclick="resetAllData()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="sidebar-btn-icon"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2"/></svg>
           <span>전체 데이터 초기화</span>
@@ -164,6 +168,19 @@
             <p class="page-subtitle" id="collection-subtitle"></p>
           </div>
           <button class="btn btn-primary" onclick="openAddWhiskyModal()">+ 위스키 추가</button>
+        </div>
+        <div class="collection-toolbar">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="search" id="collection-search" placeholder="이름 또는 증류소 검색..." oninput="onCollectionSearch(this.value)" autocomplete="off" />
+          </div>
+          <select class="sort-select" id="collection-sort" onchange="onCollectionSort(this.value)">
+            <option value="recent">최근 추가순</option>
+            <option value="name">이름순</option>
+            <option value="score">점수순</option>
+            <option value="price">가격순</option>
+            <option value="abv">도수순</option>
+          </select>
         </div>
         <div class="tab-bar">
           <button class="tab active" data-status="all">전체</button>
@@ -603,6 +620,9 @@
     </div>
   </div>
 
+  <!-- FAB 빠른 추가 버튼 (모바일) -->
+  <button id="fab-add" class="fab-btn" onclick="fabAction()">+</button>
+
   <!-- 모바일 하단 네비게이션 -->
   <nav class="bottom-nav">
     <button class="bottom-nav-item active" data-page="collection">
@@ -705,6 +725,15 @@
         <div>
           <div class="more-menu-label">데이터 가져오기</div>
           <div class="more-menu-desc">JSON 파일에서 데이터 복원</div>
+        </div>
+      </button>
+      <button class="more-menu-item" onclick="closeMoreMenu(); toggleDarkMode()">
+        <span class="more-menu-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" class="more-menu-svg"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </span>
+        <div>
+          <div class="more-menu-label" id="darkmode-more-label">다크 모드</div>
+          <div class="more-menu-desc">화면 밝기 설정</div>
         </div>
       </button>
       <div class="more-menu-divider"></div>

@@ -33,6 +33,8 @@ let statsPeriod = 'all';
 let statsDateFrom = '';
 let statsDateTo = '';
 let _communityLoaded = false;
+let currentSearchQuery = '';
+let currentSortOrder = 'recent';
 
 // 이미지 관련 상태
 let _pendingImageDataUrl = null;
@@ -357,6 +359,7 @@ const COLOR_HEX = {
 
 // ── 초기화 ──
 document.addEventListener('DOMContentLoaded', () => {
+  initDarkMode();
   // 스플래시 화면 제거 (CSS 애니메이션 완료 후)
   setTimeout(() => {
     const splash = document.getElementById('splash-screen');
@@ -457,6 +460,49 @@ function renderPage(page) {
     renderStats();
   }
   else if (page === 'wishlist') renderWishlist();
+  updateFab(page);
+}
+
+// ── 검색 / 정렬 ──
+function onCollectionSearch(q) {
+  currentSearchQuery = q;
+  renderCollection();
+}
+function onCollectionSort(val) {
+  currentSortOrder = val;
+  renderCollection();
+}
+
+// ── FAB ──
+function updateFab(page) {
+  const fab = document.getElementById('fab-add');
+  if (!fab) return;
+  fab.classList.toggle('fab-hidden', page === 'stats');
+}
+function fabAction() {
+  if (currentPage === 'collection') openAddWhiskyModal();
+  else if (currentPage === 'tasting') openAddTastingModal();
+  else if (currentPage === 'wishlist') openAddWishlistModal();
+}
+
+// ── 다크 모드 ──
+function initDarkMode() {
+  const saved = localStorage.getItem('darkMode');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const isDark = saved !== null ? saved === 'true' : prefersDark;
+  applyDarkMode(isDark);
+}
+function applyDarkMode(isDark) {
+  document.documentElement.classList.toggle('dark', isDark);
+  const label = document.getElementById('darkmode-label');
+  const moreLabel = document.getElementById('darkmode-more-label');
+  if (label) label.textContent = isDark ? '라이트 모드' : '다크 모드';
+  if (moreLabel) moreLabel.textContent = isDark ? '라이트 모드' : '다크 모드';
+}
+function toggleDarkMode() {
+  const isDark = !document.documentElement.classList.contains('dark');
+  localStorage.setItem('darkMode', isDark);
+  applyDarkMode(isDark);
 }
 
 // ── 가성비 계산 ──
@@ -491,7 +537,22 @@ function renderCollection() {
   document.getElementById('collection-subtitle').textContent =
     `전체 ${counts.all}병  ·  미개봉 ${counts.unopened}  ·  개봉중 ${counts.opened}  ·  완음 ${counts.finished}`;
 
-  const filtered = currentStatusFilter === 'all' ? all : all.filter(w => w.status === currentStatusFilter);
+  let filtered = currentStatusFilter === 'all' ? all : all.filter(w => w.status === currentStatusFilter);
+  if (currentSearchQuery) {
+    const q = currentSearchQuery.toLowerCase();
+    filtered = filtered.filter(w => w.name.toLowerCase().includes(q) || (w.distillery || '').toLowerCase().includes(q));
+  }
+  filtered = [...filtered].sort((a, b) => {
+    if (currentSortOrder === 'name')  return a.name.localeCompare(b.name, 'ko');
+    if (currentSortOrder === 'price') return (parseInt(b.purchasePrice) || 0) - (parseInt(a.purchasePrice) || 0);
+    if (currentSortOrder === 'abv')   return (parseFloat(b.abv) || 0) - (parseFloat(a.abv) || 0);
+    if (currentSortOrder === 'score') {
+      const avg = w => { const ts = Storage.getTastingsForWhisky(w.id).filter(t => t.score); return ts.length ? ts.reduce((s,t)=>s+parseInt(t.score),0)/ts.length : -1; };
+      return avg(b) - avg(a);
+    }
+    return 0;
+  });
+
   const grid = document.getElementById('whisky-grid');
   const empty = document.getElementById('collection-empty');
   grid.innerHTML = '';
@@ -510,6 +571,8 @@ function renderCollection() {
     const remaining = w.bottleSize ? Math.max(0, parseFloat(w.bottleSize) - totalPoured) : null;
     const valueData = calcWhiskyValue(w, tastings);
     const vg = valueData ? getValueGrade(valueData.valueIndex) : null;
+    const scored = tastings.filter(t => t.score !== null && t.score !== undefined && t.score !== '');
+    const avgScore = scored.length ? Math.round(scored.reduce((s, t) => s + parseInt(t.score), 0) / scored.length) : null;
 
     const card = document.createElement('div');
     card.className = 'whisky-card';
@@ -534,6 +597,7 @@ function renderCollection() {
         </div>
         <div class="card-row-bottom">
           <span class="status-badge ${STATUS_CLASS[w.status]}">${STATUS_LABEL[w.status]}</span>
+          ${avgScore !== null ? `<span class="score-badge-sm">⭐ ${avgScore}</span>` : ''}
           ${vg ? `<span class="value-grade-badge ${vg.cls}" title="${vg.label} (${valueData.valueIndex.toFixed(1)}점/만원)">💰${vg.grade}</span>` : ''}
           <span class="footer-left">📝 ${tastings.length}회
             ${w.status === 'opened' && remaining !== null ? `<span class="remaining">· 잔여 ≈${remaining.toFixed(0)}ml</span>` : ''}
